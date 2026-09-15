@@ -292,6 +292,15 @@ class ViewCountTests(TestCase):
         self.assertEqual(tabs["home"]["pct"], 50)
         self.assertEqual(tabs["polls"]["hits"], 1)
 
+    def test_home_shows_the_public_view_counter(self):
+        for _ in range(3):
+            self.client.get(reverse("festival:public_app"))
+
+        response = self.client.get(reverse("festival:public_app"))
+        # The count shown is the one before this load was recorded.
+        self.assertEqual(response.context["site_views"], 3)
+        self.assertContains(response, "fa-eye")
+
     def test_console_overview_shows_the_counters(self):
         self.client.get(reverse("festival:public_app"))
         get_user_model().objects.create_user("boss", password="pw12345!", is_staff=True)

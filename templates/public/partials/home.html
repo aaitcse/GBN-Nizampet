@@ -1,4 +1,4 @@
-{% load static %}
+{% load static humanize %}
 {# Landing tab: hero, teasers and the practical stuff, all tapping through to the other tabs. #}
 
 <!-- HERO -->
@@ -167,6 +167,11 @@
     <i class="fa-solid fa-chevron-right text-gray-500 text-xs"></i>
 </button>
 
-<p class="text-center text-[10px] text-gray-600 pt-1 pb-2">
-    {{ brand_full }} &middot; made for everyone on the ground
-</p>
+<div class="text-center space-y-1.5 pt-1 pb-2">
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold text-gray-200">
+        <i class="fa-solid fa-eye text-fest-cyan"></i>
+        {{ site_views|intcomma }}
+        <span class="text-gray-500 font-medium">view{{ site_views|pluralize }}</span>
+    </span>
+    <p class="text-[10px] text-gray-600">{{ brand_full }} &middot; made for everyone on the ground</p>
+</div>

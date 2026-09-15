@@ -11,7 +11,7 @@ organisers can see and manage.
 
 | Tab | Behaviour |
 | --- | --- |
-| Home | Landing screen: hero built from the newest approved photo, countdown to the festival, dates and venue, live stat tiles, a cross-day "happening soon" carousel, a photo wall, a poll teaser and the practical notes - every card taps through to its tab |
+| Home | Landing screen: hero banner, a visitor counter in the footer, countdown to the festival, dates and venue, live stat tiles, a cross-day "happening soon" carousel, a photo wall, a poll teaser and the practical notes - every card taps through to its tab |
 | Events | Day 1..Day N schedule built from the festival dates and opening on today's day, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
 | Photos | Approved gallery filtered by Main Stage / Crowd Vibes / Night Lights, tap for a full-screen lightbox, like a photo (once per device), upload your own from the camera roll or by URL |
 | Polls | Vote once per poll per device, then see live percentages with your own pick highlighted |
@@ -79,7 +79,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-45 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+46 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together

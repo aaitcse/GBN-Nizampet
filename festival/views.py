@@ -209,6 +209,7 @@ def home_context(request):
     poll = Poll.objects.filter(is_active=True).prefetch_related("options").first()
 
     return {
+        "site_views": PageView.objects.count(),
         "hero_image": hero_image_url(),
         "hero_photo": photos[0] if photos else None,
         "home_photos": photos[1:7],
