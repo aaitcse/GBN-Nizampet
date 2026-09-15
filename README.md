@@ -24,7 +24,7 @@ organisers can see and manage.
 - **Events** - create, edit, delete, publish/unpublish; per-event bookmark counts; filter by day.
 - **Gallery** - approve, hide or delete attendee photos and clips; add official ones by file or URL.
 - **Polls** - publish a poll with 2-4 options, close/reopen it, reset its counters, delete it.
-- **T-Shirts** - the print order: shirts to print, money to collect, a size breakdown, who has been handed theirs, and an Excel export with a Summary sheet beside the order lines.
+- **T-Shirts** - the print order: shirts to print, money to collect, a size breakdown, who has been handed theirs, and an Excel export with three sheets: Summary (the print order), Money (what each flat owes) and Orders (every line).
 - **Feedback** - filter by status or category, resolve entries, export everything to CSV.
 
 Django's own admin is also wired up at `/django-admin/` for raw data editing.
@@ -98,7 +98,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-73 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+75 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together

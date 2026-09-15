@@ -775,10 +775,6 @@ def console_tshirt_export(request):
         line("Adult subtotal", adults)
     line("TOTAL SHIRTS TO PRINT", shirts, bold=True)
 
-    section("MONEY")
-    line("Price per shirt", price, RUPEES)
-    line("Amount to collect", shirts * price, RUPEES, bold=True)
-
     section("PROGRESS")
     line("Households ordered", len({order.flat_number for order in orders}))
     line("Order lines", len(orders))
@@ -786,6 +782,61 @@ def console_tshirt_export(request):
     line("Still pending", shirts - collected)
 
     _fit_columns(summary, {"A": 26, "B": 14, "C": 14})
+
+    # ---- Money: one row per household, for whoever collects -------------
+    money = book.create_sheet("Money")
+    money["A1"] = f"{settings.FEST_BRAND_FULL} - money collection"
+    money["A1"].font = TITLE_FONT
+    money["A2"] = f"At ₹{price} per shirt"
+    money["A2"].font = Font(italic=True, size=9)
+    money.append([])
+
+    money.append(["Flat", "Name", "Mobile", "Shirts", "Amount due", "Handed over", "Outstanding"])
+    _style_header(money, money.max_row)
+
+    households = {}
+    for order in orders:
+        entry = households.setdefault(
+            order.flat_number,
+            {"name": "", "mobile": "", "shirts": 0, "handed": 0},
+        )
+        entry["name"] = entry["name"] or order.name
+        entry["mobile"] = order.mobile or entry["mobile"]
+        entry["shirts"] += order.quantity
+        if order.is_collected:
+            entry["handed"] += order.quantity
+
+    for flat in sorted(households, key=lambda f: (len(f), f)):
+        entry = households[flat]
+        outstanding = (entry["shirts"] - entry["handed"]) * price
+        money.append(
+            [
+                flat,
+                entry["name"],
+                entry["mobile"],
+                entry["shirts"],
+                entry["shirts"] * price,
+                entry["handed"],
+                outstanding,
+            ]
+        )
+        row = money.max_row
+        money.cell(row=row, column=5).number_format = RUPEES
+        money.cell(row=row, column=7).number_format = RUPEES
+        if outstanding == 0:
+            # Settled rows fade, so the eye lands on what is still owed.
+            for column in range(1, 8):
+                money.cell(row=row, column=column).font = Font(color="7A8194")
+
+    money.append(["TOTAL", "", "", shirts, shirts * price, collected, (shirts - collected) * price])
+    total_row = money.max_row
+    for column in range(1, 8):
+        money.cell(row=total_row, column=column).font = Font(bold=True)
+    money.cell(row=total_row, column=5).number_format = RUPEES
+    money.cell(row=total_row, column=7).number_format = RUPEES
+
+    _fit_columns(money, {"A": 10, "B": 22, "C": 15, "D": 10, "E": 14, "F": 14, "G": 14})
+    money.freeze_panes = "A4"
 
     # ---- Orders --------------------------------------------------------
     sheet = book.create_sheet("Orders")

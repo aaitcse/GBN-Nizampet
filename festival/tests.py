@@ -577,6 +577,33 @@ class TshirtConsoleTests(TestCase):
         self.assertEqual(summary["Adult subtotal"], 7)
         self.assertEqual(summary["TOTAL SHIRTS TO PRINT"], 9)
 
+    def test_money_sheet_totals_what_each_flat_owes(self):
+        import io
+
+        from openpyxl import load_workbook
+
+        self.client.post(reverse("festival:console_tshirt_action", args=[self.big.id, "toggle"]))
+        book = load_workbook(io.BytesIO(self.client.get(reverse("festival:console_tshirt_export")).content))
+        rows = {
+            str(row[0]): row
+            for row in book["Money"].iter_rows(min_row=4, values_only=True)
+            if row[0]
+        }
+
+        # 101: 2 shirts, none handed over, so the whole amount is outstanding.
+        self.assertEqual(rows["101"][3], 2)
+        self.assertEqual(rows["101"][4], 400)
+        self.assertEqual(rows["101"][6], 400)
+
+        # 201: 4 shirts handed over, nothing left to collect.
+        self.assertEqual(rows["201"][5], 4)
+        self.assertEqual(rows["201"][6], 0)
+
+        total = rows["TOTAL"]
+        self.assertEqual(total[3], 7)
+        self.assertEqual(total[4], 1400)
+        self.assertEqual(total[6], 600)  # 3 shirts still owed
+
     def test_export_is_an_excel_workbook_with_a_summary(self):
         import io
 
@@ -587,16 +614,17 @@ class TshirtConsoleTests(TestCase):
         self.assertIn(".xlsx", response["Content-Disposition"])
 
         book = load_workbook(io.BytesIO(response.content))
-        self.assertEqual(book.sheetnames, ["Summary", "Orders"])
+        self.assertEqual(book.sheetnames, ["Summary", "Money", "Orders"])
 
         summary = {row[0]: row[1] for row in book["Summary"].iter_rows(values_only=True) if row[0]}
         # The print order, in the app's size order, with the totals beneath it.
         self.assertEqual(summary["Adult M"], 3)
         self.assertEqual(summary["Adult XL"], 4)
         self.assertEqual(summary["TOTAL SHIRTS TO PRINT"], 7)
-        self.assertEqual(summary["Amount to collect"], 1400)
-        self.assertEqual(summary["Price per shirt"], 200)
         self.assertEqual(summary["Households ordered"], 3)
+        # Money lives on its own sheet now.
+        self.assertNotIn("Amount to collect", summary)
+        self.assertNotIn("Price per shirt", summary)
 
         flats = {str(row[0]) for row in book["Orders"].iter_rows(min_row=2, values_only=True)}
         self.assertEqual(flats, {"101", "102", "201"})
