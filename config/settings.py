@@ -164,7 +164,7 @@ FEST_EVENT_NAME = os.environ.get("FEST_EVENT_NAME", "Ganesh Utsav")
 # the code so it survives deploys; set to "" to fall back to the newest
 # approved gallery photo instead.
 FEST_HERO_IMAGE = os.environ.get("FEST_HERO_IMAGE", "img/hero.jpg")
-FEST_VENUE = os.environ.get("FEST_VENUE", "GBN Campus, Nizampet")
+FEST_VENUE = os.environ.get("FEST_VENUE", "GBN Community, Nizampet")
 FEST_DATES = os.environ.get("FEST_DATES", "14 - 20 September 2026")
 # The schedule builds its Day 1..Day N tabs from this range.
 FEST_START_DATE = os.environ.get("FEST_START_DATE", "2026-09-14")

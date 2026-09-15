@@ -125,7 +125,7 @@ Read from the environment (all optional in development):
 | `FEST_BRAND` | `GBN` | Festival name used across the app. |
 | `FEST_BRAND_FULL` | `GBN Connect` | Long form for the header and login screen. |
 | `FEST_TAGLINE` | `Festival Companion` | Sub-title in the browser tab. |
-| `FEST_VENUE` | `GBN Campus, Nizampet` | Shown on the home hero. |
+| `FEST_VENUE` | `GBN Community, Nizampet` | Shown on the home hero. |
 | `FEST_EVENT_NAME` | `Ganesh Utsav` | Occasion line above the wordmark on the hero. |
 | `FEST_DATES` | `14 - 20 September 2026` | Display dates on the home hero. |
 | `FEST_START_DATE` / `FEST_END_DATE` | `2026-09-14` / `2026-09-20` | Drive the countdown badge **and the number of day tabs** (ISO format). |
