@@ -224,11 +224,6 @@ def home_context(request):
         "home_photos": photos[1:7],
         "home_events": upcoming,
         "home_poll": decorate_poll(poll) if poll else None,
-        "home_stats": {
-            "events": Event.objects.filter(is_published=True).count(),
-            "photos": Photo.objects.filter(is_approved=True).count(),
-            "polls": Poll.objects.filter(is_active=True).count(),
-        },
         "fest_event_name": settings.FEST_EVENT_NAME,
         "fest_venue": settings.FEST_VENUE,
         "fest_dates": settings.FEST_DATES,

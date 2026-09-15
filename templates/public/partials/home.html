@@ -40,21 +40,34 @@
     {% endfor %}
 </div>
 
-<!-- STATS -->
-<div class="grid grid-cols-3 gap-2.5">
-    <button type="button" data-goto-tab="events" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
-        <div class="text-xl font-black text-fest-cyan leading-none">{{ home_stats.events }}</div>
-        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Events</div>
-    </button>
-    <button type="button" data-goto-tab="gallery" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
-        <div class="text-xl font-black text-fest-accent leading-none">{{ home_stats.photos }}</div>
-        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Gallery</div>
-    </button>
-    <button type="button" data-goto-tab="polls" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
-        <div class="text-xl font-black text-fest-gold leading-none">{{ home_stats.polls }}</div>
-        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Live Polls</div>
-    </button>
-</div>
+{% if instagram_url or whatsapp_group_url %}
+<!-- STAY CONNECTED -->
+<section class="space-y-2.5">
+    <h3 class="text-sm font-extrabold text-white">Stay connected</h3>
+    <div class="grid {% if instagram_url and whatsapp_group_url %}grid-cols-2{% else %}grid-cols-1{% endif %} gap-2.5">
+        {% if whatsapp_group_url %}
+        <a href="{{ whatsapp_group_url }}" target="_blank" rel="noopener"
+           class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#25D366]/15 border border-[#25D366]/40 active:scale-95 transition">
+            <i class="fa-brands fa-whatsapp text-xl text-[#25D366]"></i>
+            <span class="min-w-0">
+                <span class="block text-[11px] font-bold text-white leading-tight">Join the group</span>
+                <span class="block text-[10px] text-gray-400">Announcements &amp; updates</span>
+            </span>
+        </a>
+        {% endif %}
+        {% if instagram_url %}
+        <a href="{{ instagram_url }}" target="_blank" rel="noopener"
+           class="flex items-center gap-2.5 p-3 rounded-2xl bg-gradient-to-br from-fest-accent/20 to-fest-purple/20 border border-fest-accent/40 active:scale-95 transition">
+            <i class="fa-brands fa-instagram text-xl text-fest-accent"></i>
+            <span class="min-w-0">
+                <span class="block text-[11px] font-bold text-white leading-tight">Follow us</span>
+                <span class="block text-[10px] text-gray-400">Photos &amp; reels</span>
+            </span>
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
 
 <!-- HAPPENING SOON -->
 {% if home_events %}
@@ -173,35 +186,6 @@
         {% endif %}
     </div>
 </section>
-
-{% if instagram_url or whatsapp_group_url %}
-<!-- STAY CONNECTED -->
-<section class="space-y-2.5">
-    <h3 class="text-sm font-extrabold text-white">Stay connected</h3>
-    <div class="grid {% if instagram_url and whatsapp_group_url %}grid-cols-2{% else %}grid-cols-1{% endif %} gap-2.5">
-        {% if whatsapp_group_url %}
-        <a href="{{ whatsapp_group_url }}" target="_blank" rel="noopener"
-           class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#25D366]/15 border border-[#25D366]/40 active:scale-95 transition">
-            <i class="fa-brands fa-whatsapp text-xl text-[#25D366]"></i>
-            <span class="min-w-0">
-                <span class="block text-[11px] font-bold text-white leading-tight">Join the group</span>
-                <span class="block text-[10px] text-gray-400">Announcements &amp; updates</span>
-            </span>
-        </a>
-        {% endif %}
-        {% if instagram_url %}
-        <a href="{{ instagram_url }}" target="_blank" rel="noopener"
-           class="flex items-center gap-2.5 p-3 rounded-2xl bg-gradient-to-br from-fest-accent/20 to-fest-purple/20 border border-fest-accent/40 active:scale-95 transition">
-            <i class="fa-brands fa-instagram text-xl text-fest-accent"></i>
-            <span class="min-w-0">
-                <span class="block text-[11px] font-bold text-white leading-tight">Follow us</span>
-                <span class="block text-[10px] text-gray-400">Photos &amp; reels</span>
-            </span>
-        </a>
-        {% endif %}
-    </div>
-</section>
-{% endif %}
 
 <!-- FEEDBACK NUDGE -->
 <button type="button" data-goto-tab="feedback"
