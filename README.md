@@ -186,10 +186,12 @@ with Blueprint > **Manual Sync** (or set Start Command to `./start.sh` in the se
 applied`, and the traceback is in the service log.
 
 **`failed to resolve host 'dpg-...'` / `could not translate host name`** - the web service and the
-database are in different regions. Render's internal database hostnames resolve only within one
-region, and a database with no `region:` in the blueprint defaults to `oregon`. Check the region
-shown on both dashboard pages; if they differ, delete the database and re-sync the blueprint so it
-is recreated alongside the service. As a stopgap you can paste the database's **External** URL
+database are in different regions. `start.sh` runs `wait_for_db` first, which prints this
+diagnosis in plain words before the deploy fails. Render's internal database hostnames resolve only within one
+region, and a database with no `region:` in the blueprint defaults to `oregon`. A region cannot be
+changed after creation, and syncing the blueprint will not move an existing database - so check the
+region on both dashboard pages and, if they differ, **delete the database** and re-sync so it is
+recreated alongside the service. As a stopgap you can paste the database's **External** URL
 (which resolves from anywhere) into the service's `DATABASE_URL`, at the cost of routing traffic
 over the public internet.
 
