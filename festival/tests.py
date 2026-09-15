@@ -1,10 +1,11 @@
 """End-to-end coverage of the attendee flows and the organiser console."""
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .models import Bookmark, Event, Feedback, Photo, PhotoLike, Poll, PollOption, Vote
+from .views import countdown_label
 
 
 def make_event(**kwargs):
@@ -36,11 +37,42 @@ class PublicAppTests(TestCase):
         self.option_a = PollOption.objects.create(poll=self.poll, text="Main", votes=3, position=1)
         self.option_b = PollOption.objects.create(poll=self.poll, text="Dome", votes=1, position=2)
 
-    def test_home_page_renders_day_one(self):
+    def test_home_is_the_default_tab(self):
+        response = self.client.get(reverse("festival:public_app"))
+        self.assertEqual(response.context["active_tab"], "home")
+        for block in ["Happening soon", "Straight from the crowd", "Know before you go"]:
+            self.assertContains(response, block)
+
+    def test_home_hero_uses_latest_approved_photo(self):
+        response = self.client.get(reverse("festival:public_app"))
+        self.assertEqual(response.context["hero_photo"], self.photo)
+
+    def test_home_never_shows_unapproved_photos(self):
+        response = self.client.get(reverse("festival:public_app"))
+        shown = [self.photo] + list(response.context["home_photos"])
+        self.assertNotIn(self.hidden_photo, shown)
+
+    @override_settings(FEST_START_DATE="2099-01-10", FEST_END_DATE="2099-01-12")
+    def test_countdown_before_the_festival(self):
+        self.assertTrue(countdown_label().startswith("Starts in "))
+
+    @override_settings(FEST_START_DATE="2000-01-01", FEST_END_DATE="2000-01-03")
+    def test_countdown_after_the_festival(self):
+        self.assertIn("wrap", countdown_label())
+
+    @override_settings(FEST_START_DATE="not-a-date", FEST_END_DATE="nope")
+    def test_countdown_survives_a_bad_date_setting(self):
+        self.assertEqual(countdown_label(), "")
+
+    def test_events_tab_renders_day_one(self):
         response = self.client.get(reverse("festival:public_app"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Cyber Beats Live")
-        self.assertNotContains(response, "Acoustic Sunset")
+        # Day filtering belongs to the events list; the home carousel is
+        # deliberately cross-day, so scope this assertion to the list itself.
+        day_one = self.client.get(reverse("festival:events_partial"), {"day": "Day 1"})
+        self.assertContains(day_one, "Cyber Beats Live")
+        self.assertNotContains(day_one, "Acoustic Sunset")
 
     def test_unpublished_events_are_hidden(self):
         response = self.client.get(reverse("festival:public_app"))

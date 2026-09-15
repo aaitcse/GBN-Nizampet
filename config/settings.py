@@ -137,3 +137,15 @@ FEST_AUTO_APPROVE_PHOTOS = os.environ.get("FEST_AUTO_APPROVE_PHOTOS", "0") == "1
 FEST_BRAND = os.environ.get("FEST_BRAND", "GBN")
 FEST_BRAND_FULL = os.environ.get("FEST_BRAND_FULL", f"{FEST_BRAND} Connect")
 FEST_TAGLINE = os.environ.get("FEST_TAGLINE", "Festival Companion")
+
+# Shown on the home screen. Dates are display-only; the schedule itself is
+# organised by Day 1 / Day 2 / Day 3 in the console.
+FEST_VENUE = os.environ.get("FEST_VENUE", "GBN Campus, Nizampet")
+FEST_DATES = os.environ.get("FEST_DATES", "16 - 18 October 2026")
+FEST_START_DATE = os.environ.get("FEST_START_DATE", "2026-10-16")
+FEST_END_DATE = os.environ.get("FEST_END_DATE", "2026-10-18")
+FEST_WELCOME = os.environ.get(
+    "FEST_WELCOME",
+    "Three days of music, food and light across the campus. "
+    "Save what you love, vote for the sets, and send us your best shots.",
+)

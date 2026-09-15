@@ -1,6 +1,7 @@
 """Views for the public festival app and the organiser console."""
 
 import csv
+from datetime import date
 
 from django.conf import settings
 from django.contrib import messages
@@ -19,6 +20,43 @@ from .forms import EventForm, FeedbackForm, PhotoForm, PhotoUploadForm, PollForm
 from .models import Bookmark, Event, Feedback, Photo, PhotoLike, Poll, PollOption, Vote
 
 GALLERY_CATEGORIES = [("All", "All Photos")] + list(Photo.CATEGORY_CHOICES)
+
+# Home screen copy. Placeholder wording - edit these two lists to match the
+# real festival before you hand the link to attendees.
+VIBE_CHIPS = [
+    "\U0001F3B5 Live Music",
+    "\U0001F35C Food Village",
+    "\U0001F30C Night Lights",
+    "\U0001F3A8 Workshops",
+    "⚡ Silent Disco",
+]
+
+KNOW_BEFORE = [
+    {
+        "icon": "fa-id-card",
+        "colour": "fest-cyan",
+        "title": "Entry & ID",
+        "body": "Carry your college ID. Gates open 30 minutes before the first set.",
+    },
+    {
+        "icon": "fa-utensils",
+        "colour": "fest-accent",
+        "title": "Food Village",
+        "body": "Stalls run all day. UPI accepted everywhere, veg counters marked.",
+    },
+    {
+        "icon": "fa-van-shuttle",
+        "colour": "fest-gold",
+        "title": "Getting there",
+        "body": "Shuttles from the main road every 20 minutes until the last act.",
+    },
+    {
+        "icon": "fa-kit-medical",
+        "colour": "fest-green",
+        "title": "Need help?",
+        "body": "Volunteers in pink jackets, and a medical tent by the Main Stage.",
+    },
+]
 
 
 # --------------------------------------------------------------------------- #
@@ -114,18 +152,61 @@ def polls_context(request):
     return {"polls": [decorate_poll(p, votes.get(p.id)) for p in polls]}
 
 
+def countdown_label():
+    """Human phrasing for how far away the festival is."""
+    try:
+        start = date.fromisoformat(settings.FEST_START_DATE)
+        end = date.fromisoformat(settings.FEST_END_DATE)
+    except (ValueError, AttributeError):
+        return ""
+
+    today = timezone.localdate()
+    if today < start:
+        days = (start - today).days
+        return "Starts tomorrow" if days == 1 else f"Starts in {days} days"
+    if today <= end:
+        return f"Live now - day {(today - start).days + 1}"
+    return "That is a wrap. See you next year!"
+
+
+def home_context(request):
+    """Everything the landing tab shows: hero, teasers and festival facts."""
+    photos = list(Photo.objects.filter(is_approved=True)[:7])
+    upcoming = list(Event.objects.filter(is_published=True)[:3])
+    poll = Poll.objects.filter(is_active=True).prefetch_related("options").first()
+
+    return {
+        "hero_photo": photos[0] if photos else None,
+        "home_photos": photos[1:7],
+        "home_events": upcoming,
+        "home_poll": decorate_poll(poll) if poll else None,
+        "home_stats": {
+            "events": Event.objects.filter(is_published=True).count(),
+            "photos": Photo.objects.filter(is_approved=True).count(),
+            "polls": Poll.objects.filter(is_active=True).count(),
+        },
+        "fest_venue": settings.FEST_VENUE,
+        "fest_dates": settings.FEST_DATES,
+        "fest_welcome": settings.FEST_WELCOME,
+        "fest_countdown": countdown_label(),
+        "vibe_chips": VIBE_CHIPS,
+        "know_before": KNOW_BEFORE,
+    }
+
+
 # --------------------------------------------------------------------------- #
 # public app
 # --------------------------------------------------------------------------- #
 def public_app(request):
     context = {
-        "active_tab": request.GET.get("tab", "events"),
+        "active_tab": request.GET.get("tab", "home"),
         "feedback_categories": Feedback.CATEGORY_CHOICES,
         "photo_categories": Photo.CATEGORY_CHOICES,
     }
     context.update(events_context(request))
     context.update(gallery_context(request))
     context.update(polls_context(request))
+    context.update(home_context(request))
     return render(request, "public/app.html", context)
 
 

@@ -62,6 +62,7 @@
             b.classList.toggle("text-fest-accent", on);
             b.classList.toggle("text-gray-400", !on);
         });
+        $("main")?.scrollTo({ top: 0 });
         const url = new URL(window.location);
         url.searchParams.set("tab", tab);
         history.replaceState({}, "", url);
@@ -69,6 +70,11 @@
 
     $$(".nav-btn").forEach((btn) =>
         btn.addEventListener("click", () => switchTab(btn.dataset.tab))
+    );
+
+    // Hero stats, teaser cards and "see all" links on the home screen.
+    $$("[data-goto-tab]").forEach((el) =>
+        el.addEventListener("click", () => switchTab(el.dataset.gotoTab))
     );
 
     // -------------------------------------------------------------- events

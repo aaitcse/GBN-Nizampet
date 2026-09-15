@@ -41,6 +41,11 @@
 
     <main class="flex-1 overflow-y-auto hide-scrollbar relative pb-24">
 
+        <!-- TAB 0: HOME -->
+        <section id="tab-home" class="tab-content p-4 space-y-5 {% if active_tab != 'home' %}hidden{% endif %}">
+            {% include "public/partials/home.html" %}
+        </section>
+
         <!-- TAB 1: DAILY EVENTS -->
         <section id="tab-events" class="tab-content p-4 space-y-4 {% if active_tab != 'events' %}hidden{% endif %}">
             <div class="space-y-3">
@@ -191,6 +196,10 @@
     <!-- Bottom navigation -->
     <nav class="absolute bottom-0 inset-x-0 glass-nav z-30 px-2 py-2 safe-pb">
         <div class="flex justify-around items-center">
+            <button type="button" data-tab="home" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'home' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="fa-solid fa-house text-base"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">Home</span>
+            </button>
             <button type="button" data-tab="events" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'events' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-calendar-days text-base"></i>
                 <span class="text-[10px] font-extrabold mt-0.5">Events</span>

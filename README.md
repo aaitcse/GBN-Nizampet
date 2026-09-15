@@ -7,10 +7,11 @@ organisers can see and manage.
 
 ## What it does
 
-**Attendee app** (`/`) - a phone-shaped dark UI with four tabs:
+**Attendee app** (`/`) - a phone-shaped dark UI with five tabs:
 
 | Tab | Behaviour |
 | --- | --- |
+| Home | Landing screen: hero built from the newest approved photo, countdown to the festival, dates and venue, live stat tiles, a cross-day "happening soon" carousel, a photo wall, a poll teaser and the practical notes - every card taps through to its tab |
 | Events | Day 1/2/3 schedule, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
 | Photos | Approved gallery filtered by Main Stage / Crowd Vibes / Night Lights, tap for a full-screen lightbox, like a photo (once per device), upload your own from the camera roll or by URL |
 | Polls | Vote once per poll per device, then see live percentages with your own pick highlighted |
@@ -70,7 +71,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-26 tests cover the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+32 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together
@@ -88,7 +89,7 @@ festival/
   management/commands/seed_demo.py
 templates/
   base.html        Tailwind config, fonts, theme
-  public/          attendee app shell + partials re-rendered by fetch()
+  public/          attendee app shell + partials (home screen, and the lists re-rendered by fetch())
   console/         organiser dashboard pages
 static/js/app.js   progressive enhancement layer
 static/css/app.css glass-panel theme
@@ -116,6 +117,10 @@ Read from the environment (all optional in development):
 | `FEST_BRAND` | `GBN` | Festival name used across the app. |
 | `FEST_BRAND_FULL` | `GBN Connect` | Long form for the header and login screen. |
 | `FEST_TAGLINE` | `Festival Companion` | Sub-title in the browser tab. |
+| `FEST_VENUE` | `GBN Campus, Nizampet` | Shown on the home hero. |
+| `FEST_DATES` | `16 - 18 October 2026` | Display dates on the home hero. |
+| `FEST_START_DATE` / `FEST_END_DATE` | `2026-10-16` / `2026-10-18` | Drive the countdown badge (ISO format). |
+| `FEST_WELCOME` | short intro | Welcome paragraph under the hero. |
 | `FEST_AUTO_APPROVE_PHOTOS` | `0` | Skip photo moderation. |
 | `DJANGO_SECRET_KEY` | dev key | **Set this in production.** |
 | `DJANGO_DEBUG` | `1` | Set to `0` in production. |

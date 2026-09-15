@@ -1,0 +1,169 @@
+{# Landing tab: hero, teasers and the practical stuff, all tapping through to the other tabs. #}
+
+<!-- HERO -->
+<div class="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+    {% if hero_photo %}
+    <img src="{{ hero_photo.display_image }}" alt="{{ hero_photo.title }}" class="w-full h-60 object-cover">
+    {% else %}
+    <div class="w-full h-60 bg-gradient-to-br from-fest-purple via-fest-accent to-fest-cyan"></div>
+    {% endif %}
+
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/10"></div>
+
+    <div class="absolute inset-x-0 bottom-0 p-4 space-y-2.5">
+        {% if fest_countdown %}
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-fest-accent/25 border border-fest-accent/50 text-fest-accent text-[10px] font-extrabold uppercase tracking-wider animate-pulse-glow">
+            <span class="w-1.5 h-1.5 rounded-full bg-fest-accent mr-1.5"></span>{{ fest_countdown }}
+        </span>
+        {% endif %}
+
+        <h2 class="text-3xl font-extrabold leading-none bg-gradient-to-r from-white via-slate-100 to-fest-cyan bg-clip-text text-transparent">
+            {{ brand_full|upper }}
+        </h2>
+
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-300 font-bold">
+            <span><i class="fa-solid fa-calendar-day text-fest-accent mr-1"></i>{{ fest_dates }}</span>
+            <span><i class="fa-solid fa-location-dot text-fest-cyan mr-1"></i>{{ fest_venue }}</span>
+        </div>
+    </div>
+</div>
+
+<p class="text-xs text-gray-300 leading-relaxed px-0.5">{{ fest_welcome }}</p>
+
+<!-- VIBE CHIPS -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar -mx-1 px-1 py-0.5">
+    {% for chip in vibe_chips %}
+    <span class="shrink-0 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold text-gray-200 whitespace-nowrap">{{ chip }}</span>
+    {% endfor %}
+</div>
+
+<!-- STATS -->
+<div class="grid grid-cols-3 gap-2.5">
+    <button type="button" data-goto-tab="events" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
+        <div class="text-xl font-black text-fest-cyan leading-none">{{ home_stats.events }}</div>
+        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Events</div>
+    </button>
+    <button type="button" data-goto-tab="gallery" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
+        <div class="text-xl font-black text-fest-accent leading-none">{{ home_stats.photos }}</div>
+        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Photos</div>
+    </button>
+    <button type="button" data-goto-tab="polls" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
+        <div class="text-xl font-black text-fest-gold leading-none">{{ home_stats.polls }}</div>
+        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Live Polls</div>
+    </button>
+</div>
+
+<!-- HAPPENING SOON -->
+{% if home_events %}
+<section class="space-y-2.5">
+    <div class="flex items-baseline justify-between">
+        <h3 class="text-sm font-extrabold text-white">Happening soon</h3>
+        <button type="button" data-goto-tab="events" class="text-[11px] font-bold text-fest-cyan">Full schedule <i class="fa-solid fa-chevron-right text-[9px]"></i></button>
+    </div>
+
+    <div class="flex gap-3 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-1">
+        {% for event in home_events %}
+        <button type="button" data-goto-tab="events"
+                class="shrink-0 w-44 text-left rounded-2xl overflow-hidden glass-panel border border-white/10 active:scale-[0.98] transition">
+            <div class="relative h-24">
+                <img src="{{ event.display_image }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+                <span class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></span>
+                <span class="absolute bottom-1.5 left-2 text-[9px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-fest-cyan uppercase">{{ event.category }}</span>
+            </div>
+            <div class="p-2.5 space-y-1">
+                <h4 class="text-xs font-bold text-white leading-snug line-clamp-2">{{ event.title }}</h4>
+                <p class="text-[10px] text-gray-400">{{ event.day }} &middot; {{ event.time_slot }}</p>
+                <p class="text-[10px] text-gray-500 truncate"><i class="fa-solid fa-location-dot text-fest-accent mr-1"></i>{{ event.location }}</p>
+            </div>
+        </button>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- PHOTO WALL -->
+<section class="space-y-2.5">
+    <div class="flex items-baseline justify-between">
+        <h3 class="text-sm font-extrabold text-white">Straight from the crowd</h3>
+        <button type="button" data-goto-tab="gallery" class="text-[11px] font-bold text-fest-cyan">Gallery <i class="fa-solid fa-chevron-right text-[9px]"></i></button>
+    </div>
+
+    {% if home_photos %}
+    <div class="grid grid-cols-3 gap-2">
+        {% for photo in home_photos %}
+        <button type="button" data-goto-tab="gallery" class="relative aspect-square rounded-xl overflow-hidden border border-white/10 active:scale-95 transition">
+            <img src="{{ photo.display_image }}" alt="{{ photo.title }}" class="w-full h-full object-cover">
+            <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 text-[9px] font-bold text-fest-accent text-right">
+                <i class="fa-solid fa-heart"></i> {{ photo.likes }}
+            </span>
+        </button>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-[11px] text-gray-500 py-1">No shots up yet - yours could be the first on the wall.</p>
+    {% endif %}
+
+    <button type="button" data-goto-tab="gallery"
+            class="w-full py-2.5 rounded-xl bg-gradient-to-r from-fest-accent to-fest-purple text-white font-extrabold text-[11px] shadow-lg active:scale-95 transition">
+        <i class="fa-solid fa-camera mr-1.5"></i>SHARE YOUR SHOT
+    </button>
+</section>
+
+<!-- POLL TEASER -->
+{% if home_poll %}
+<section class="space-y-2.5">
+    <div class="flex items-baseline justify-between">
+        <h3 class="text-sm font-extrabold text-white">Crowd is voting</h3>
+        <button type="button" data-goto-tab="polls" class="text-[11px] font-bold text-fest-cyan">All polls <i class="fa-solid fa-chevron-right text-[9px]"></i></button>
+    </div>
+
+    <button type="button" data-goto-tab="polls" class="w-full text-left glass-panel p-4 rounded-2xl space-y-2.5 active:scale-[0.99] transition">
+        <div class="flex justify-between items-start gap-2">
+            <h4 class="text-xs font-bold text-white leading-snug">{{ home_poll.question }}</h4>
+            <span class="shrink-0 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-fest-green/20 text-fest-green border border-fest-green/40">Live</span>
+        </div>
+        {% for option in home_poll.decorated_options|slice:":2" %}
+        <div class="space-y-1">
+            <div class="flex justify-between text-[10px] text-gray-300 font-bold">
+                <span>{{ option.text }}</span><span>{{ option.pct }}%</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-fest-accent to-fest-purple" style="width: {{ option.pct }}%"></div>
+            </div>
+        </div>
+        {% endfor %}
+        <p class="text-[10px] text-fest-cyan font-bold pt-0.5">Tap to cast your vote &rarr;</p>
+    </button>
+</section>
+{% endif %}
+
+<!-- KNOW BEFORE YOU GO -->
+<section class="space-y-2.5">
+    <h3 class="text-sm font-extrabold text-white">Know before you go</h3>
+    <div class="grid grid-cols-2 gap-2.5">
+        {% for item in know_before %}
+        <div class="glass-panel p-3 rounded-2xl space-y-1">
+            <i class="fa-solid {{ item.icon }} text-{{ item.colour }} text-sm"></i>
+            <h4 class="text-[11px] font-bold text-white">{{ item.title }}</h4>
+            <p class="text-[10px] text-gray-400 leading-relaxed">{{ item.body }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- FEEDBACK NUDGE -->
+<button type="button" data-goto-tab="feedback"
+        class="w-full glass-panel p-4 rounded-2xl flex items-center gap-3 text-left border border-white/10 active:scale-[0.99] transition">
+    <div class="w-9 h-9 shrink-0 rounded-full bg-fest-cyan/15 text-fest-cyan flex items-center justify-center">
+        <i class="fa-solid fa-comment-dots"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+        <h4 class="text-xs font-bold text-white">Tell us how it is going</h4>
+        <p class="text-[10px] text-gray-400">Sound, food, queues - the crew reads every note.</p>
+    </div>
+    <i class="fa-solid fa-chevron-right text-gray-500 text-xs"></i>
+</button>
+
+<p class="text-center text-[10px] text-gray-600 pt-1 pb-2">
+    {{ brand_full }} &middot; made for everyone on the ground
+</p>
