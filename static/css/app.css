@@ -43,9 +43,20 @@ nav,
     padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 
-/* Phone frame used by the attendee app */
+/* Phone frame used by the attendee app.
+   100vh on Android Chrome and iOS Safari counts the area hidden behind the
+   URL bar, which pushed the bottom navigation off screen. 100dvh is the
+   viewport you can actually see; vh stays as the fallback for old browsers. */
 .phone-shell {
     overflow: hidden;
+    height: 100vh;
+    height: 100dvh;
+}
+
+@supports (height: 100dvh) {
+    .phone-frame {
+        max-height: 100dvh;
+    }
 }
 
 /* Dark form controls, since the browser default select/option is light */

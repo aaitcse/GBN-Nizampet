@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block title %}{{ brand_full }} - {{ brand_tagline }}{% endblock %}
-{% block body_class %}flex justify-center items-center h-screen bg-black phone-shell{% endblock %}
+{% block body_class %}flex justify-center items-center bg-black phone-shell{% endblock %}
 
 {% block body %}
 <div id="app-container"
-     class="w-full max-w-md h-full sm:h-[94vh] sm:rounded-[40px] bg-fest-bg relative flex flex-col overflow-hidden shadow-2xl border border-white/10"
+     class="phone-frame w-full max-w-md h-full sm:h-[94vh] sm:rounded-[40px] bg-fest-bg relative flex flex-col overflow-hidden shadow-2xl border border-white/10"
      data-config='{"events": "{% url "festival:events_partial" %}", "gallery": "{% url "festival:gallery_partial" %}", "polls": "{% url "festival:polls_partial" %}", "upload": "{% url "festival:upload_photo" %}", "feedback": "{% url "festival:submit_feedback" %}"}'>
 
     <form id="csrf-form" class="hidden">{% csrf_token %}</form>
@@ -36,7 +36,7 @@
         {% endfor %}
     </div>
 
-    <main class="flex-1 overflow-y-auto hide-scrollbar relative pb-24">
+    <main class="flex-1 min-h-0 overflow-y-auto hide-scrollbar relative pb-4">
 
         <!-- TAB 0: HOME -->
         <section id="tab-home" class="tab-content p-4 space-y-5 {% if active_tab != 'home' %}hidden{% endif %}">
@@ -191,7 +191,7 @@
     </main>
 
     <!-- Bottom navigation -->
-    <nav class="absolute bottom-0 inset-x-0 glass-nav z-30 px-2 py-2 safe-pb">
+    <nav class="shrink-0 glass-nav z-30 px-2 py-2 safe-pb">
         <div class="flex justify-around items-center">
             <button type="button" data-tab="home" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'home' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-house text-base"></i>
