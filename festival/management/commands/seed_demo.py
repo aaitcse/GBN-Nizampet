@@ -1,8 +1,12 @@
-"""Load a realistic demo festival so the app is not empty on first run.
+"""Load a demo Ganesh Utsav programme so the app is not empty on first run.
 
     python manage.py seed_demo            # add demo content
     python manage.py seed_demo --reset    # wipe festival data first
     python manage.py seed_demo --admin    # also create the demo organiser login
+
+The schedule below is placeholder programming for a seven day utsav. Edit it,
+or replace it from the organiser console once the real timings are fixed. The
+images are generic stock photos - swap in real ones from the console.
 """
 
 from django.contrib.auth import get_user_model
@@ -12,62 +16,84 @@ from festival.models import Bookmark, Event, Feedback, Photo, PhotoLike, Poll, P
 
 UNSPLASH = "https://images.unsplash.com/photo-{}?auto=format&fit=crop&w=800&q=80"
 
+# Stock image ids, all checked to resolve.
+LIGHTS = "1470225620780-dba8ba36b745"
+FOOD = "1555396273-367ea4eb4db5"
+ACOUSTIC = "1511671782779-c97d3d27a1d4"
+CROWD = "1492684223066-81342ee5ff30"
+STAGE = "1514525253161-7a46d19cd819"
+FIREWORKS = "1516450360452-9312f5e86fc7"
+CALM = "1544367567-0f2fcb009e0b"
+BAND = "1493225457124-a3eb161ffa5f"
+FIELD = "1461896836934-ffe607ba8211"
+HANDS = "1470229722913-7c0e2dbbafd3"
+NIGHT = "1459749411175-04bf5292ceea"
+
+# title, day, time, place, category, description, image
 EVENTS = [
-    ("Cyber Beats Live (Headliner)", "Day 1", "19:00 - 21:00", "Main Stage", "Music",
-     "The opening-night headline set: 4K visuals, live drums and a laser wall.",
-     "1470225620780-dba8ba36b745"),
-    ("Street Food Extravaganza", "Day 1", "12:00 - 22:00", "Food Village", "Food",
-     "Forty stalls, six cuisines, one very long queue for the taco truck.",
-     "1555396273-367ea4eb4db5"),
-    ("Sunrise Yoga & Sound Bath", "Day 1", "07:00 - 08:00", "Garden Lawn", "Workshop",
-     "Slow start to the weekend with singing bowls and a lot of stretching.",
-     "1544367567-0f2fcb009e0b"),
-    ("Acoustic Sunset Sets", "Day 2", "17:30 - 19:00", "Electro Dome", "Music",
-     "Three songwriters, one mic, golden hour behind the dome.",
-     "1511671782779-c97d3d27a1d4"),
-    ("Indie Battle of the Bands", "Day 2", "14:00 - 16:30", "Second Stage", "Music",
-     "Eight campus bands play twenty minutes each. The crowd picks the winner.",
-     "1493225457124-a3eb161ffa5f"),
-    ("Silent Disco Marathon", "Day 2", "22:00 - 02:00", "Dome Annex", "Show",
-     "Three channels, three DJs, zero noise complaints.",
-     "1516450360452-9312f5e86fc7"),
-    ("Glow Parade & Neon Lightshow", "Day 3", "21:00 - 22:30", "Main Grounds", "Show",
-     "The closing parade winds through the grounds and ends in fireworks.",
-     "1492684223066-81342ee5ff30"),
-    ("Campus Sports Meetup", "Day 3", "10:00 - 13:00", "North Field", "Sports",
-     "Five-a-side football, ultimate frisbee and a tug of war final.",
-     "1461896836934-ffe607ba8211"),
-    ("Closing Ceremony & Awards", "Day 3", "23:00 - 23:45", "Main Stage", "Show",
-     "Poll winners announced, volunteers thanked, last song of the weekend.",
-     "1514525253161-7a46d19cd819"),
+    ("Ganesh Sthapana & Pran Pratishtha", "Day 1", "06:30 - 09:00", "Main Pandal", "Ritual",
+     "The idol is installed and the week opens with the first aarti of the utsav.", CALM),
+    ("Inaugural Bhajan Sandhya", "Day 1", "18:30 - 20:30", "Main Pandal", "Music",
+     "Campus choir and invited singers open the cultural calendar.", ACOUSTIC),
+
+    ("Rangoli Competition", "Day 2", "10:00 - 13:00", "Arts Block", "Workshop",
+     "Teams of two, chalk and colour provided, judging at 1 pm.", HANDS),
+    ("Dhol Tasha Pathak", "Day 2", "18:00 - 19:30", "Central Lawn", "Music",
+     "Forty drummers open the evening. Stand back from the circle.", BAND),
+
+    ("Atharvashirsha Recitation", "Day 3", "06:30 - 07:30", "Main Pandal", "Ritual",
+     "Collective morning recitation. Everyone is welcome to join in.", CALM),
+    ("Classical Dance Evening", "Day 3", "18:30 - 21:00", "Open Air Theatre", "Show",
+     "Bharatanatyam and Kuchipudi sets from students and guest artists.", STAGE),
+
+    ("Eco Ganesha Clay Workshop", "Day 4", "10:00 - 12:30", "Arts Block", "Workshop",
+     "Shape your own clay idol to take home. Materials included.", HANDS),
+    ("Inter-college Singing Contest", "Day 4", "15:00 - 18:00", "Auditorium", "Music",
+     "Twelve colleges, three rounds, one trophy.", ACOUSTIC),
+
+    ("Mahaprasadam Annadanam", "Day 5", "12:00 - 15:00", "Food Village", "Food",
+     "Community lunch served to all. Volunteers welcome at the counters.", FOOD),
+    ("Garba & Folk Night", "Day 5", "19:00 - 22:00", "Central Lawn", "Show",
+     "Live dhol, open floor, no experience needed.", CROWD),
+
+    ("Sports Meet & Tug of War", "Day 6", "09:00 - 13:00", "North Field", "Sports",
+     "Department teams, knockout format, finals right before lunch.", FIELD),
+    ("Grand Cultural Finale", "Day 6", "18:00 - 22:00", "Open Air Theatre", "Show",
+     "The big one: dance, drama, band sets and the prize ceremony.", LIGHTS),
+
+    ("Maha Aarti", "Day 7", "08:00 - 09:15", "Main Pandal", "Ritual",
+     "The final aarti before the procession. Pandal fills early.", NIGHT),
+    ("Visarjan Procession", "Day 7", "16:00 - 20:00", "Campus Gate to Lake Road", "Show",
+     "Procession leaves the campus gate at 4 pm sharp. Walk with the dhol.", FIREWORKS),
 ]
 
+# title, category, image, author, approved, likes
 PHOTOS = [
-    ("Main Stage Lasers", "Stage", "1514525253161-7a46d19cd819", "Festival Crew", True, 42),
-    ("Crowd Energy at Sundown", "Crowd", "1492684223066-81342ee5ff30", "Alex M.", True, 89),
-    ("Midnight Fireworks", "Night", "1516450360452-9312f5e86fc7", "Sarah K.", True, 64),
-    ("Food Truck Neon", "Stage", "1555396273-367ea4eb4db5", "Mark T.", True, 18),
-    ("Hands Up Front Row", "Crowd", "1470229722913-7c0e2dbbafd3", "Priya R.", True, 51),
-    ("Dome After Dark", "Night", "1459749411175-04bf5292ceea", "Festival Crew", False, 0),
+    ("Sthapana Morning", "Stage", CALM, "Festival Crew", True, 38),
+    ("Dhol Tasha Circle", "Crowd", BAND, "Anil K.", True, 92),
+    ("Evening Aarti Lamps", "Night", NIGHT, "Sarah K.", True, 71),
+    ("Prasadam Counter Rush", "Crowd", FOOD, "Mark T.", True, 24),
+    ("Pandal After Dark", "Night", FIREWORKS, "Priya R.", True, 57),
+    ("Front Row Hands Up", "Crowd", HANDS, "Festival Fan", False, 0),
 ]
 
 POLLS = [
-    ("Best Stage Visuals of Night 1?",
-     [("Main Stage Neon", 142), ("Electro Dome Lasers", 98), ("Acoustic Garden", 24)], True),
-    ("Top Snack at Food Village?",
-     [("Gourmet Tacos", 76), ("Vegan Smash Burgers", 110), ("Wood-fired Pizza", 63)], True),
-    ("Which act should headline the closing night?",
-     [("Cyber Beats", 210), ("The Static Hearts", 134), ("DJ Monsoon", 187)], True),
-    ("Was the Day 0 soundcheck loud enough?",
-     [("Perfect", 44), ("Too quiet", 12)], False),
+    ("Which pandal decoration deserves the prize?",
+     [("Eco-friendly clay theme", 142), ("Floral mandap", 98), ("Temple replica", 76)], True),
+    ("Best prasadam this year?",
+     [("Modak", 210), ("Motichoor laddu", 118), ("Puran poli", 64)], True),
+    ("Favourite evening so far?",
+     [("Bhajan Sandhya", 88), ("Dhol Tasha", 176), ("Classical Dance", 95)], True),
+    ("Should the aarti be live-streamed next year?",
+     [("Yes, please", 64), ("No need", 9)], False),
 ]
 
 FEEDBACK = [
-    (5, "Sound & Stage", "The sound clarity on the Main Stage was absolute perfection!", "user1@fest.com"),
-    (4, "Facilities & Cleanliness", "Restroom lines were manageable, but we need more water stations near the Dome.", ""),
-    (3, "Food & Drinks", "Great variety, though the vegan stall sold out by 8pm on Friday.", "priya@example.com"),
-    (5, "Security & Safety", "Entry check was quick and the marshals were genuinely friendly.", ""),
-    (2, "General Suggestion", "Please publish the shuttle timings in the app - we missed the last bus.", "9876543210"),
+    (5, "Sound & Stage", "The aarti sound reached the whole ground clearly this year. Beautifully done.", "student1@gbn.test"),
+    (4, "Facilities & Cleanliness", "Darshan queue moved fast, but we need more bins near the food village.", ""),
+    (3, "Food & Drinks", "Prasadam counters ran out by 2 pm on day one. Maybe add a second counter?", "priya@example.com"),
+    (5, "Security & Safety", "Volunteers managing the dhol circle did a great job keeping kids safe.", ""),
+    (2, "General Suggestion", "Please announce the visarjan route timings in the app a day earlier.", "9876543210"),
 ]
 
 

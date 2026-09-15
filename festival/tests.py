@@ -1,10 +1,24 @@
 """End-to-end coverage of the attendee flows and the organiser console."""
 
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
-from .models import Bookmark, Event, Feedback, Photo, PhotoLike, Poll, PollOption, Vote
+from .models import (
+    Bookmark,
+    Event,
+    Feedback,
+    Photo,
+    PhotoLike,
+    Poll,
+    PollOption,
+    Vote,
+    current_festival_day,
+    festival_day_choices,
+)
 from .views import countdown_label
 
 
@@ -63,6 +77,39 @@ class PublicAppTests(TestCase):
     @override_settings(FEST_START_DATE="not-a-date", FEST_END_DATE="nope")
     def test_countdown_survives_a_bad_date_setting(self):
         self.assertEqual(countdown_label(), "")
+
+    @override_settings(FEST_START_DATE="2026-09-14", FEST_END_DATE="2026-09-20")
+    def test_day_tabs_are_built_from_the_festival_dates(self):
+        choices = festival_day_choices()
+        self.assertEqual(len(choices), 7)
+        self.assertEqual(choices[0], ("Day 1", "Day 1 - Mon 14 Sep"))
+        self.assertEqual(choices[-1], ("Day 7", "Day 7 - Sun 20 Sep"))
+
+    @override_settings(FEST_START_DATE="nonsense", FEST_END_DATE="nonsense")
+    def test_day_tabs_fall_back_when_dates_are_unset(self):
+        self.assertEqual([v for v, _ in festival_day_choices()], ["Day 1", "Day 2", "Day 3"])
+
+    @override_settings(FEST_START_DATE="2026-09-20", FEST_END_DATE="2026-09-14")
+    def test_day_tabs_ignore_a_backwards_date_range(self):
+        self.assertEqual(len(festival_day_choices()), 3)
+
+    def test_schedule_opens_on_todays_day_during_the_festival(self):
+        today = timezone.localdate()
+        with override_settings(
+            FEST_START_DATE=str(today - timedelta(days=2)),
+            FEST_END_DATE=str(today + timedelta(days=4)),
+        ):
+            self.assertEqual(current_festival_day(), "Day 3")
+            response = self.client.get(reverse("festival:public_app"))
+            self.assertEqual(response.context["selected_day"], "Day 3")
+
+    def test_schedule_opens_on_day_one_outside_the_festival(self):
+        today = timezone.localdate()
+        with override_settings(
+            FEST_START_DATE=str(today + timedelta(days=30)),
+            FEST_END_DATE=str(today + timedelta(days=32)),
+        ):
+            self.assertEqual(current_festival_day(), "Day 1")
 
     def test_events_tab_renders_day_one(self):
         response = self.client.get(reverse("festival:public_app"))

@@ -1,28 +1,73 @@
 """Domain models for the GBN festival companion app."""
 
+from datetime import date, timedelta
+
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
+
+MAX_FESTIVAL_DAYS = 21
+
+
+def festival_dates():
+    """The festival range from settings, or None if it is not configured."""
+    try:
+        start = date.fromisoformat(settings.FEST_START_DATE)
+        end = date.fromisoformat(settings.FEST_END_DATE)
+    except (ValueError, AttributeError, TypeError):
+        return None
+    if end < start:
+        return None
+    return start, end
+
+
+def festival_day_choices():
+    """Day 1..Day N built from the configured dates, labelled with the date.
+
+    Stored values stay "Day 1", "Day 2", ... so existing events survive a date
+    change; only the labels move. Django evaluates this callable lazily, so no
+    migration is needed when the festival dates change.
+    """
+    span = festival_dates()
+    if not span:
+        return [(f"Day {i}", f"Day {i}") for i in range(1, 4)]
+
+    start, end = span
+    total = min((end - start).days + 1, MAX_FESTIVAL_DAYS)
+    choices = []
+    for index in range(total):
+        day = start + timedelta(days=index)
+        choices.append((f"Day {index + 1}", f"Day {index + 1} - {day.strftime('%a %d %b')}"))
+    return choices
+
+
+def current_festival_day():
+    """The day value for today, or the first day when the festival is not on."""
+    span = festival_dates()
+    choices = festival_day_choices()
+    if span:
+        start, end = span
+        today = timezone.localdate()
+        if start <= today <= end:
+            return f"Day {(today - start).days + 1}"
+    return choices[0][0]
 
 
 class Event(models.Model):
     """A single scheduled item on the festival programme."""
 
-    DAY_CHOICES = [
-        ("Day 1", "Day 1 (Fri)"),
-        ("Day 2", "Day 2 (Sat)"),
-        ("Day 3", "Day 3 (Sun)"),
-    ]
     CATEGORY_CHOICES = [
+        ("Ritual", "Ritual / Aarti"),
         ("Music", "Music"),
-        ("Food", "Food"),
         ("Show", "Show"),
         ("Workshop", "Workshop"),
+        ("Food", "Food"),
         ("Sports", "Sports"),
         ("Other", "Other"),
     ]
 
     title = models.CharField(max_length=160)
-    day = models.CharField(max_length=10, choices=DAY_CHOICES, default="Day 1")
+    day = models.CharField(max_length=10, choices=festival_day_choices, default="Day 1")
     time_slot = models.CharField(max_length=60, help_text="e.g. 19:00 - 21:00")
     location = models.CharField(max_length=120, help_text="Stage or venue name")
     category = models.CharField(max_length=40, choices=CATEGORY_CHOICES, default="Music")

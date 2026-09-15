@@ -140,12 +140,14 @@ FEST_TAGLINE = os.environ.get("FEST_TAGLINE", "Festival Companion")
 
 # Shown on the home screen. Dates are display-only; the schedule itself is
 # organised by Day 1 / Day 2 / Day 3 in the console.
+FEST_EVENT_NAME = os.environ.get("FEST_EVENT_NAME", "Ganesh Utsav")
 FEST_VENUE = os.environ.get("FEST_VENUE", "GBN Campus, Nizampet")
-FEST_DATES = os.environ.get("FEST_DATES", "16 - 18 October 2026")
-FEST_START_DATE = os.environ.get("FEST_START_DATE", "2026-10-16")
-FEST_END_DATE = os.environ.get("FEST_END_DATE", "2026-10-18")
+FEST_DATES = os.environ.get("FEST_DATES", "14 - 20 September 2026")
+# The schedule builds its Day 1..Day N tabs from this range.
+FEST_START_DATE = os.environ.get("FEST_START_DATE", "2026-09-14")
+FEST_END_DATE = os.environ.get("FEST_END_DATE", "2026-09-20")
 FEST_WELCOME = os.environ.get(
     "FEST_WELCOME",
-    "Three days of music, food and light across the campus. "
+    "Seven days of aarti, music, food and light across the campus. "
     "Save what you love, vote for the sets, and send us your best shots.",
 )

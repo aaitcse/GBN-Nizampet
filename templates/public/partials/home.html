@@ -17,6 +17,10 @@
         </span>
         {% endif %}
 
+        {% if fest_event_name %}
+        <p class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-fest-gold drop-shadow">{{ fest_event_name }}</p>
+        {% endif %}
+
         <h2 class="text-3xl font-extrabold leading-none bg-gradient-to-r from-white via-slate-100 to-fest-cyan bg-clip-text text-transparent">
             {{ brand_full|upper }}
         </h2>

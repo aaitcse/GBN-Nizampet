@@ -17,44 +17,55 @@ from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from .forms import EventForm, FeedbackForm, PhotoForm, PhotoUploadForm, PollForm
-from .models import Bookmark, Event, Feedback, Photo, PhotoLike, Poll, PollOption, Vote
+from .models import (
+    Bookmark,
+    Event,
+    Feedback,
+    Photo,
+    PhotoLike,
+    Poll,
+    PollOption,
+    Vote,
+    current_festival_day,
+    festival_day_choices,
+)
 
 GALLERY_CATEGORIES = [("All", "All Photos")] + list(Photo.CATEGORY_CHOICES)
 
 # Home screen copy. Placeholder wording - edit these two lists to match the
 # real festival before you hand the link to attendees.
 VIBE_CHIPS = [
-    "\U0001F3B5 Live Music",
-    "\U0001F35C Food Village",
-    "\U0001F30C Night Lights",
-    "\U0001F3A8 Workshops",
-    "⚡ Silent Disco",
+    "\U0001FA94 Daily Aarti",
+    "\U0001F941 Dhol Tasha",
+    "\U0001F35B Mahaprasadam",
+    "\U0001F3AD Cultural Nights",
+    "\U0001F30A Visarjan",
 ]
 
 KNOW_BEFORE = [
     {
-        "icon": "fa-id-card",
-        "colour": "fest-cyan",
-        "title": "Entry & ID",
-        "body": "Carry your college ID. Gates open 30 minutes before the first set.",
+        "icon": "fa-hands-praying",
+        "colour": "fest-gold",
+        "title": "Aarti timings",
+        "body": "Morning and evening aarti at the Main Pandal. Check the day tab for exact times.",
     },
     {
         "icon": "fa-utensils",
         "colour": "fest-accent",
-        "title": "Food Village",
-        "body": "Stalls run all day. UPI accepted everywhere, veg counters marked.",
+        "title": "Prasadam",
+        "body": "Counters open through the day at the Food Village. Annadanam on Day 5.",
     },
     {
-        "icon": "fa-van-shuttle",
-        "colour": "fest-gold",
-        "title": "Getting there",
-        "body": "Shuttles from the main road every 20 minutes until the last act.",
+        "icon": "fa-id-card",
+        "colour": "fest-cyan",
+        "title": "Entry & ID",
+        "body": "Carry your college ID. Footwear stands are next to both pandal gates.",
     },
     {
         "icon": "fa-kit-medical",
         "colour": "fest-green",
         "title": "Need help?",
-        "body": "Volunteers in pink jackets, and a medical tent by the Main Stage.",
+        "body": "Volunteers in pink jackets, and a medical point beside the Main Pandal.",
     },
 ]
 
@@ -81,7 +92,7 @@ def staff_required(view):
 
 def events_context(request):
     """Filtered event list plus the filter state the template needs."""
-    day = request.GET.get("day") or Event.DAY_CHOICES[0][0]
+    day = request.GET.get("day") or current_festival_day()
     query = (request.GET.get("q") or "").strip()
     saved_only = request.GET.get("saved") == "1"
     bookmarked = set(
@@ -104,7 +115,7 @@ def events_context(request):
 
     return {
         "events": events,
-        "day_choices": Event.DAY_CHOICES,
+        "day_choices": festival_day_choices(),
         "selected_day": day,
         "search_query": query,
         "saved_only": saved_only,
@@ -185,6 +196,7 @@ def home_context(request):
             "photos": Photo.objects.filter(is_approved=True).count(),
             "polls": Poll.objects.filter(is_active=True).count(),
         },
+        "fest_event_name": settings.FEST_EVENT_NAME,
         "fest_venue": settings.FEST_VENUE,
         "fest_dates": settings.FEST_DATES,
         "fest_welcome": settings.FEST_WELCOME,
@@ -378,7 +390,7 @@ def console_events(request):
         {
             "section": "events",
             "events": events,
-            "day_choices": Event.DAY_CHOICES,
+            "day_choices": festival_day_choices(),
             "selected_day": day or "",
         },
     )

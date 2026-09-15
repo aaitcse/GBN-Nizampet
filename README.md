@@ -12,7 +12,7 @@ organisers can see and manage.
 | Tab | Behaviour |
 | --- | --- |
 | Home | Landing screen: hero built from the newest approved photo, countdown to the festival, dates and venue, live stat tiles, a cross-day "happening soon" carousel, a photo wall, a poll teaser and the practical notes - every card taps through to its tab |
-| Events | Day 1/2/3 schedule, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
+| Events | Day 1..Day N schedule built from the festival dates and opening on today's day, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
 | Photos | Approved gallery filtered by Main Stage / Crowd Vibes / Night Lights, tap for a full-screen lightbox, like a photo (once per device), upload your own from the camera roll or by URL |
 | Polls | Vote once per poll per device, then see live percentages with your own pick highlighted |
 | Feedback | Star rating, category, comment and optional contact - lands in the organiser inbox |
@@ -50,6 +50,14 @@ Open the attendee app on your phone by running `python manage.py runserver 0.0.0
 visiting `http://<your-computer-ip>:8000/` on the same Wi-Fi (add that IP to
 `DJANGO_ALLOWED_HOSTS`).
 
+## Festival dates and the schedule length
+
+The schedule builds its day tabs from `FEST_START_DATE` and `FEST_END_DATE`: a seven day
+utsav gets `Day 1 - Mon 14 Sep` through `Day 7 - Sun 20 Sep`, a weekend gets two. Stored
+values stay `Day 1`, `Day 2`, ... so existing events survive a date change - only the labels
+move, and no migration is needed. While the festival is running the Events tab opens on
+today's day instead of Day 1.
+
 ## The festival name
 
 The name shown in the app header, the console, the browser tab, the Django admin and the
@@ -71,7 +79,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-32 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+37 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together
@@ -118,8 +126,9 @@ Read from the environment (all optional in development):
 | `FEST_BRAND_FULL` | `GBN Connect` | Long form for the header and login screen. |
 | `FEST_TAGLINE` | `Festival Companion` | Sub-title in the browser tab. |
 | `FEST_VENUE` | `GBN Campus, Nizampet` | Shown on the home hero. |
-| `FEST_DATES` | `16 - 18 October 2026` | Display dates on the home hero. |
-| `FEST_START_DATE` / `FEST_END_DATE` | `2026-10-16` / `2026-10-18` | Drive the countdown badge (ISO format). |
+| `FEST_EVENT_NAME` | `Ganesh Utsav` | Occasion line above the wordmark on the hero. |
+| `FEST_DATES` | `14 - 20 September 2026` | Display dates on the home hero. |
+| `FEST_START_DATE` / `FEST_END_DATE` | `2026-09-14` / `2026-09-20` | Drive the countdown badge **and the number of day tabs** (ISO format). |
 | `FEST_WELCOME` | short intro | Welcome paragraph under the hero. |
 | `FEST_AUTO_APPROVE_PHOTOS` | `0` | Skip photo moderation. |
 | `DJANGO_SECRET_KEY` | dev key | **Set this in production.** |
