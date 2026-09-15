@@ -264,16 +264,13 @@ def order_tshirt(request):
 
     form = TshirtOrderForm(request.POST)
     if form.is_valid():
-        order = form.save(commit=False)
-        order.session_key = session_key(request)
-        order.save()
+        rows = form.save(session_key(request))
         if is_ajax(request):
-            return render(
-                request,
-                "public/partials/tshirt_summary.html",
-                {**tshirt_context(request), "just_ordered": order},
-            )
-        messages.success(request, f"{order.quantity} shirt(s) reserved for flat {order.flat_number}.")
+            return render(request, "public/partials/tshirt_summary.html", tshirt_context(request))
+        shirts = sum(row.quantity for row in rows)
+        messages.success(
+            request, f"{shirts} shirt(s) reserved for flat {form.cleaned_data['flat_number']}."
+        )
         return redirect(reverse("festival:public_app") + "?tab=tshirt")
 
     if is_ajax(request):

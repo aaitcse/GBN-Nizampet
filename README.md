@@ -15,7 +15,7 @@ organisers can see and manage.
 | Events | Day 1..Day N schedule built from the festival dates and opening on today's day, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
 | Gallery | Approved photos **and short video clips**, filtered by Main Stage / Crowd Vibes / Night Lights; tap for a full-screen lightbox that plays clips; like an item (once per device); add your own from the camera roll |
 | Polls | Vote once per poll per device, then see live percentages with your own pick highlighted |
-| T-Shirt | Reserve festival t-shirts for the final day: flat number, mobile, size and quantity, with the amount due adding up live. Submit once per size; the running total for that household shows above the form |
+| T-Shirt | Reserve festival t-shirts for the final day: flat number, mobile, then how many shirts and a size for each one, with the amount due adding up live. Matching sizes fold into one line, and repeat orders add to the household running total |
 | Feedback | Star rating, category, comment and optional contact - lands in the organiser inbox |
 
 **Organiser console** (`/console/`, staff login required):
@@ -98,7 +98,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-67 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+71 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together

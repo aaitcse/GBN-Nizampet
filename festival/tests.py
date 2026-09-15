@@ -422,8 +422,10 @@ class ViewCountTests(TestCase):
 
 
 class TshirtOrderTests(TestCase):
-    def order(self, **overrides):
-        payload = {"flat_number": "b-404", "mobile": "98765 43210", "size": "L", "quantity": 2}
+    def order(self, sizes=("L", "L"), **overrides):
+        """Post the form the way the page does: a count, then a size per shirt."""
+        payload = {"flat_number": "b-404", "mobile": "98765 43210", "quantity": len(sizes)}
+        payload.update({f"size_{i}": size for i, size in enumerate(sizes, start=1)})
         payload.update(overrides)
         return self.client.post(
             reverse("festival:order_tshirt"), payload, HTTP_X_REQUESTED_WITH="fetch"
@@ -433,7 +435,7 @@ class TshirtOrderTests(TestCase):
         response = self.order(name="Pavan")
         self.assertEqual(response.status_code, 200)
 
-        order = TshirtOrder.objects.get()
+        order = TshirtOrder.objects.get()  # both shirts are size L, so one row
         self.assertEqual(order.flat_number, "B-404")  # normalised to upper case
         self.assertEqual(order.mobile, "9876543210")  # spaces stripped
         self.assertEqual(order.quantity, 2)
@@ -442,7 +444,7 @@ class TshirtOrderTests(TestCase):
 
     def test_summary_comes_back_with_the_running_total(self):
         self.order()
-        response = self.order(size="Kids-M", quantity=1)
+        response = self.order(sizes=["Kids-M"])
         self.assertContains(response, "You are on the list")
         self.assertContains(response, "3 shirts total")
         self.assertContains(response, "600")
@@ -454,11 +456,41 @@ class TshirtOrderTests(TestCase):
         self.assertEqual(TshirtOrder.objects.count(), 0)
 
     def test_indian_country_code_is_accepted_and_stripped(self):
-        self.order(mobile="+91 98765 43210")
+        self.order(sizes=["M"], mobile="+91 98765 43210")
         self.assertEqual(TshirtOrder.objects.get().mobile, "9876543210")
 
     def test_quantity_is_capped(self):
         response = self.order(quantity=50)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(TshirtOrder.objects.count(), 0)
+
+    def test_each_shirt_can_be_a_different_size(self):
+        self.order(sizes=["L", "Kids-S", "L", "XXL"], name="Pavan")
+
+        rows = {row.size: row.quantity for row in TshirtOrder.objects.all()}
+        self.assertEqual(rows, {"L": 2, "Kids-S": 1, "XXL": 1})  # same sizes folded together
+        self.assertEqual(sum(rows.values()), 4)
+
+    def test_repeat_orders_add_to_the_same_size_row(self):
+        self.order(sizes=["M"])
+        self.order(sizes=["M", "M"])
+
+        row = TshirtOrder.objects.get(size="M")
+        self.assertEqual(row.quantity, 3)
+        self.assertEqual(TshirtOrder.objects.count(), 1)
+
+    def test_a_missing_size_is_refused(self):
+        response = self.client.post(
+            reverse("festival:order_tshirt"),
+            {"flat_number": "B-404", "mobile": "9876543210", "quantity": 3, "size_1": "L"},
+            HTTP_X_REQUESTED_WITH="fetch",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Pick a size for each shirt", str(response.json()["errors"]))
+        self.assertEqual(TshirtOrder.objects.count(), 0)
+
+    def test_an_invalid_size_is_refused(self):
+        response = self.order(sizes=["XXXXXL"])
         self.assertEqual(response.status_code, 400)
         self.assertEqual(TshirtOrder.objects.count(), 0)
 
@@ -472,7 +504,7 @@ class TshirtOrderTests(TestCase):
 
     @override_settings(FEST_TSHIRT_PRICE=250)
     def test_price_comes_from_settings(self):
-        self.order(quantity=3)
+        self.order(sizes=["M", "M", "M"])
         self.assertEqual(TshirtOrder.objects.get().amount, 750)
         self.assertContains(self.client.get(reverse("festival:public_app")), "250")
 

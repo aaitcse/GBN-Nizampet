@@ -1,6 +1,7 @@
 """Forms for attendee submissions and the organiser console."""
 
 import re
+from collections import Counter
 from pathlib import Path
 
 from django import forms
@@ -140,12 +141,54 @@ class PhotoUploadForm(forms.ModelForm):
         return self.cleaned_data["author"].strip() or "Festival Fan"
 
 
-class TshirtOrderForm(forms.ModelForm):
-    """Household t-shirt reservation: flat, mobile, size and how many."""
+class TshirtOrderForm(forms.Form):
+    """Household t-shirt reservation.
 
-    class Meta:
-        model = TshirtOrder
-        fields = ["flat_number", "mobile", "name", "size", "quantity"]
+    They say how many shirts first, then pick a size for each one, so the sizes
+    arrive as size_1..size_N. Identical sizes are folded into one row per size,
+    which is what the printer needs.
+    """
+
+    flat_number = forms.CharField(max_length=30)
+    mobile = forms.CharField(max_length=15)
+    name = forms.CharField(max_length=80, required=False)
+    quantity = forms.IntegerField(min_value=1, max_value=20)
+
+    def clean(self):
+        cleaned = super().clean()
+        quantity = cleaned.get("quantity")
+        if not quantity:
+            return cleaned
+
+        allowed = {value for value, _ in TshirtOrder.SIZE_CHOICES}
+        sizes = []
+        for index in range(1, quantity + 1):
+            chosen = (self.data.get(f"size_{index}") or "").strip()
+            if chosen not in allowed:
+                raise forms.ValidationError("Pick a size for each shirt.")
+            sizes.append(chosen)
+
+        cleaned["sizes"] = sizes
+        return cleaned
+
+    def save(self, session_key):
+        """One row per size, merged with anything this device already ordered."""
+        data = self.cleaned_data
+        rows = []
+        for size, count in Counter(data["sizes"]).items():
+            row, created = TshirtOrder.objects.get_or_create(
+                session_key=session_key,
+                flat_number=data["flat_number"],
+                size=size,
+                defaults={"mobile": data["mobile"], "name": data["name"], "quantity": count},
+            )
+            if not created:
+                row.quantity += count
+                row.mobile = data["mobile"]
+                row.name = data["name"] or row.name
+                row.save(update_fields=["quantity", "mobile", "name"])
+            rows.append(row)
+        return rows
 
     def clean_flat_number(self):
         flat = self.cleaned_data["flat_number"].strip().upper()
@@ -163,12 +206,6 @@ class TshirtOrderForm(forms.ModelForm):
         if len(digits) != 10:
             raise forms.ValidationError("Enter a 10 digit mobile number.")
         return digits
-
-    def clean_quantity(self):
-        quantity = self.cleaned_data["quantity"]
-        if not 1 <= quantity <= 20:
-            raise forms.ValidationError("Order between 1 and 20 shirts at a time.")
-        return quantity
 
     def clean_name(self):
         return self.cleaned_data["name"].strip()

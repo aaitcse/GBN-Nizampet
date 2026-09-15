@@ -40,22 +40,33 @@
                class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
-        <div>
-            <label for="ts-size" class="block text-[11px] font-bold text-gray-300 mb-1">Size *</label>
-            <select name="size" id="ts-size"
-                    class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-fest-accent">
-                {% for value, label in tshirt_sizes %}
-                <option value="{{ value }}" {% if value == "M" %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="ts-qty" class="block text-[11px] font-bold text-gray-300 mb-1">How many *</label>
+    <div>
+        <label class="block text-[11px] font-bold text-gray-300 mb-1.5">How many T-shirts? *</label>
+        <div class="flex items-center gap-2">
+            <button type="button" id="ts-minus" aria-label="One fewer"
+                    class="w-10 h-10 shrink-0 rounded-xl bg-white/10 border border-white/10 text-lg font-black text-white active:scale-90 transition">&minus;</button>
             <input type="number" name="quantity" id="ts-qty" value="1" min="1" max="20" inputmode="numeric"
-                   class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-fest-accent">
+                   class="flex-1 text-center bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-base font-black text-white focus:outline-none focus:border-fest-accent">
+            <button type="button" id="ts-plus" aria-label="One more"
+                    class="w-10 h-10 shrink-0 rounded-xl bg-fest-accent text-lg font-black text-white active:scale-90 transition">+</button>
         </div>
     </div>
+
+    <div>
+        <label class="block text-[11px] font-bold text-gray-300 mb-1.5">Size for each one *</label>
+        <div id="ts-sizes" class="space-y-2">
+            <!-- One row per shirt, built from the count above -->
+        </div>
+    </div>
+
+    {# Hidden master list the size rows are cloned from. #}
+    <template id="ts-size-template">
+        <select class="ts-size w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-fest-accent">
+            {% for value, label in tshirt_sizes %}
+            <option value="{{ value }}" {% if value == "M" %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </template>
 
     <div class="flex justify-between items-center px-3 py-2.5 rounded-xl bg-white/5 border border-white/10">
         <span class="text-[11px] font-bold text-gray-300">Amount to pay</span>

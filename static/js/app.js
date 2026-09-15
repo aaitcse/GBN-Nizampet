@@ -329,15 +329,53 @@
     // ------------------------------------------------------------- t-shirts
     const tshirtForm = $("#tshirt-form");
 
-    function paintTshirtTotal() {
-        const total = $("#ts-total");
-        if (!total) return;
-        const qty = Math.max(1, Math.min(20, Number($("#ts-qty").value) || 1));
-        total.textContent = qty * Number(total.dataset.price);
+    function shirtCount() {
+        return Math.max(1, Math.min(20, Number($("#ts-qty").value) || 1));
     }
 
-    $("#ts-qty")?.addEventListener("input", paintTshirtTotal);
-    paintTshirtTotal();
+    // One size row per shirt: keep what is already chosen, add or drop the rest.
+    function paintSizeRows() {
+        const list = $("#ts-sizes");
+        const template = $("#ts-size-template");
+        if (!list || !template) return;
+        const wanted = shirtCount();
+
+        while (list.children.length > wanted) list.lastElementChild.remove();
+
+        while (list.children.length < wanted) {
+            const index = list.children.length + 1;
+            const row = document.createElement("div");
+            row.className = "flex items-center gap-2";
+            row.innerHTML =
+                '<span class="w-16 shrink-0 text-[11px] font-bold text-gray-400">Shirt ' +
+                index +
+                "</span>";
+            const select = template.content.firstElementChild.cloneNode(true);
+            select.name = "size_" + index;
+            row.appendChild(select);
+            list.appendChild(row);
+        }
+
+        // Renumber after a removal so the names stay size_1..size_N.
+        Array.from(list.children).forEach((row, i) => {
+            row.querySelector("span").textContent = "Shirt " + (i + 1);
+            row.querySelector("select").name = "size_" + (i + 1);
+        });
+
+        const total = $("#ts-total");
+        if (total) total.textContent = wanted * Number(total.dataset.price);
+    }
+
+    $("#ts-qty")?.addEventListener("input", paintSizeRows);
+    $("#ts-minus")?.addEventListener("click", () => {
+        $("#ts-qty").value = Math.max(1, shirtCount() - 1);
+        paintSizeRows();
+    });
+    $("#ts-plus")?.addEventListener("click", () => {
+        $("#ts-qty").value = Math.min(20, shirtCount() + 1);
+        paintSizeRows();
+    });
+    paintSizeRows();
 
     tshirtForm?.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -348,7 +386,7 @@
                 $("#tshirt-summary").outerHTML = html;
                 errors.classList.add("hidden");
                 tshirtForm.reset();
-                paintTshirtTotal();
+                paintSizeRows();
                 toast("Reserved! See you on the final day.");
                 $("main")?.scrollTo({ top: 0, behavior: "smooth" });
             })
