@@ -6,6 +6,9 @@ databases:
     databaseName: gbn
     user: gbn
     plan: free # free Postgres is removed after 30 days; upgrade for a real event
+    # MUST match the web service region below. Render's internal database
+    # hostnames only resolve inside one region, and the default is oregon.
+    region: singapore
 
 services:
   - type: web
@@ -14,7 +17,9 @@ services:
     plan: free # free instances sleep after 15 min idle and wake on the next request
     region: singapore # closest to India; also: oregon, frankfurt, ohio, virginia
     buildCommand: "./build.sh"
-    startCommand: "gunicorn config.wsgi:application"
+    # Migrations run at startup, not during the build: the build environment
+    # cannot reach the private database network, the running service can.
+    startCommand: "./start.sh"
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION

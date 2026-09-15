@@ -129,8 +129,11 @@ rebuilt afterwards.
 ## Deploy to Render
 
 The repo is Render-ready: [`render.yaml`](render.yaml) declares the web service and a Postgres
-database, and [`build.sh`](build.sh) installs, collects static files, migrates and creates the
-organiser login on every deploy.
+database, [`build.sh`](build.sh) installs dependencies and collects static files, and
+[`start.sh`](start.sh) migrates the database, creates the organiser login and starts gunicorn.
+
+Database work belongs in `start.sh`, not `build.sh`: Render's build environment cannot reach the
+private database network, so `manage.py migrate` only works once the service is running.
 
 **1. Push this folder to GitHub**
 
@@ -156,8 +159,18 @@ Deploy finishes at `https://gbn-festival.onrender.com` - attendee app at `/`, co
 `/console/`.
 
 **Doing it without the blueprint:** New > Web Service, connect the repo, then set
-Build Command `./build.sh`, Start Command `gunicorn config.wsgi:application`, and add a Postgres
-instance whose `DATABASE_URL` you paste into the service environment.
+Build Command `./build.sh`, Start Command `./start.sh`, and add a Postgres instance **in the same
+region** whose `DATABASE_URL` you paste into the service environment.
+
+### Troubleshooting
+
+**`failed to resolve host 'dpg-...'` / `could not translate host name`** - the web service and the
+database are in different regions. Render's internal database hostnames resolve only within one
+region, and a database with no `region:` in the blueprint defaults to `oregon`. Check the region
+shown on both dashboard pages; if they differ, delete the database and re-sync the blueprint so it
+is recreated alongside the service. As a stopgap you can paste the database's **External** URL
+(which resolves from anywhere) into the service's `DATABASE_URL`, at the cost of routing traffic
+over the public internet.
 
 ### What the production settings do
 
