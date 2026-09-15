@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block title %}{{ brand_full }} - {{ brand_tagline }}{% endblock %}
-{% block body_class %}flex justify-center items-center bg-black phone-shell{% endblock %}
+{% block body_class %}flex justify-center items-center bg-black phone-shell p-1.5 sm:p-0{% endblock %}
 
 {% block body %}
 <div id="app-container"
-     class="phone-frame w-full max-w-md h-full sm:h-[94vh] sm:rounded-[40px] bg-fest-bg relative flex flex-col overflow-hidden shadow-2xl border border-white/10"
+     class="phone-frame w-full max-w-md h-full sm:h-[94vh] rounded-[28px] sm:rounded-[40px] bg-fest-bg relative flex flex-col overflow-hidden shadow-2xl border border-white/10"
      data-config='{"events": "{% url "festival:events_partial" %}", "gallery": "{% url "festival:gallery_partial" %}", "polls": "{% url "festival:polls_partial" %}", "upload": "{% url "festival:upload_photo" %}", "feedback": "{% url "festival:submit_feedback" %}"}'>
 
     <form id="csrf-form" class="hidden">{% csrf_token %}</form>
