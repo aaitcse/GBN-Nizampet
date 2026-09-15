@@ -13,17 +13,44 @@ STOCK_FALLBACK = (
 )
 
 
+# Tiles rendered by scripts/make_category_art.py, one per event category.
+CATEGORY_ART = {
+    "dance",
+    "singing",
+    "sloka",
+    "music",
+    "art",
+    "ritual",
+    "show",
+    "workshop",
+    "food",
+    "sports",
+    "other",
+}
+
+
+def _static(name):
+    """static() that returns None instead of raising on an unknown file."""
+    from django.templatetags.static import static
+
+    try:
+        return static(name)
+    except ValueError:
+        return None
+
+
 def festival_banner():
     """The bundled festival image, used wherever nothing better is set."""
     name = getattr(settings, "FEST_HERO_IMAGE", "")
-    if not name:
-        return STOCK_FALLBACK
-    try:
-        from django.templatetags.static import static
+    return (_static(name) if name else None) or STOCK_FALLBACK
 
-        return static(name)
-    except ValueError:
-        return STOCK_FALLBACK
+
+def category_image(category):
+    """Artwork for an event category: a dancer for Dance, a mic for Singing."""
+    slug = (category or "").strip().lower()
+    if slug not in CATEGORY_ART:
+        return festival_banner()
+    return _static(f"img/cat/{slug}.png") or festival_banner()
 
 
 def festival_dates():
@@ -108,9 +135,9 @@ class Event(models.Model):
     def display_image(self):
         if self.image:
             return self.image.url
-        # Without a picture of its own, an item wears the festival banner -
-        # better than a stock concert photo above a sloka recitation.
-        return self.image_url or festival_banner()
+        # Without a picture of its own, an item wears artwork for its kind of
+        # performance - a dancer, a mic, an om - rather than a stock photo.
+        return self.image_url or category_image(self.category)
 
     @property
     def bookmark_count(self):

@@ -60,6 +60,13 @@ It matches on day + time slot + title, so running it twice updates rather than d
 schedule in step with the file. Days 6 and 7 were not on the banners - add them to
 `festival/management/commands/load_programme.py`, or from the console.
 
+### Event pictures
+
+An event shows its own uploaded image or `image_url` if it has one. Otherwise it falls back to
+artwork for its category - a dancer for Dance, a mic for Singing, an om for Sloka Recitation -
+rendered by `scripts/make_category_art.py` into `static/img/cat/`. Regenerate them after adding
+a category, or point the event at a real photo from the console.
+
 ## Festival dates and the schedule length
 
 The schedule builds its day tabs from `FEST_START_DATE` and `FEST_END_DATE`: a seven day
@@ -89,7 +96,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-46 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+50 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together
@@ -111,6 +118,7 @@ templates/
   console/         organiser dashboard pages
 static/js/app.js   progressive enhancement layer
 static/css/app.css glass-panel theme
+static/img/cat/     per-category event artwork, from scripts/make_category_art.py
 ```
 
 **Progressive enhancement.** Every attendee action is an ordinary Django `<form>` POST. `app.js`

@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -17,7 +18,9 @@ from .models import (
     Poll,
     PollOption,
     Vote,
+    category_image,
     current_festival_day,
+    festival_banner,
     festival_day_choices,
 )
 from .views import countdown_label, view_stats
@@ -247,6 +250,27 @@ class PublicAppTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Feedback.objects.count(), 0)
+
+
+class EventArtworkTests(TestCase):
+    def test_event_without_a_picture_gets_artwork_for_its_category(self):
+        event = make_event(category="Sloka", image_url="")
+        self.assertEqual(event.display_image, static("img/cat/sloka.png"))
+
+    def test_an_events_own_image_url_always_wins(self):
+        event = make_event(category="Dance", image_url="https://example.com/troupe.jpg")
+        self.assertEqual(event.display_image, "https://example.com/troupe.jpg")
+
+    def test_unknown_category_falls_back_to_the_festival_banner(self):
+        event = make_event(category="Mystery", image_url="")
+        self.assertEqual(event.display_image, festival_banner())
+
+    def test_every_category_choice_has_artwork(self):
+        for code, _ in Event.CATEGORY_CHOICES:
+            with self.subTest(category=code):
+                self.assertEqual(
+                    category_image(code), static(f"img/cat/{code.lower()}.png")
+                )
 
 
 class ViewCountTests(TestCase):
