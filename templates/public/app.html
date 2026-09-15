@@ -114,9 +114,7 @@
 
         <!-- TAB 3: LIVE POLLS (with the festival t-shirt at the top) -->
         <section id="tab-polls" class="tab-content p-4 space-y-4 {% if active_tab != 'polls' %}hidden{% endif %}">
-            {% include "public/partials/tshirt.html" %}
-
-            <div class="pt-2 border-t border-white/10"></div>
+            {% include "public/partials/tshirt_card.html" %}
             <div class="flex justify-between items-start">
                 <div>
                     <h2 class="text-xl font-extrabold text-white">Live Festival Polls</h2>
@@ -235,6 +233,19 @@
                     class="px-3 py-1.5 rounded-full bg-fest-accent/20 border border-fest-accent/40 text-fest-accent font-bold active:scale-90 transition">
                 <i class="fa-solid fa-heart mr-1"></i><span id="lb-likes">0</span>
             </button>
+        </div>
+    </div>
+
+    <!-- T-shirt order modal -->
+    <div id="tshirt-modal" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+        <div class="w-full max-w-sm max-h-[88vh] overflow-y-auto hide-scrollbar space-y-3">
+            <div class="flex justify-end">
+                <button type="button" id="tshirt-close" aria-label="Close"
+                        class="w-9 h-9 rounded-full bg-white/10 border border-white/20 text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            {% include "public/partials/tshirt.html" %}
         </div>
     </div>
 

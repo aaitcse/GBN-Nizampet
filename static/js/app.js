@@ -345,7 +345,26 @@
         })
     );
 
+    const tshirtModal = $("#tshirt-modal");
     const tshirtForm = $("#tshirt-form");
+
+    $("#open-tshirt")?.addEventListener("click", () => {
+        tshirtModal.classList.remove("hidden");
+        tshirtModal.classList.add("flex");
+    });
+
+    $("#tshirt-close")?.addEventListener("click", () => {
+        tshirtModal.classList.add("hidden");
+        tshirtModal.classList.remove("flex");
+    });
+
+    // Tapping the dark surround closes it, like the other sheets.
+    tshirtModal?.addEventListener("click", (e) => {
+        if (e.target === tshirtModal) {
+            tshirtModal.classList.add("hidden");
+            tshirtModal.classList.remove("flex");
+        }
+    });
 
     function shirtCount() {
         return Math.max(1, Math.min(20, Number($("#ts-qty").value) || 1));
@@ -406,8 +425,18 @@
                 errors.classList.add("hidden");
                 tshirtForm.reset();
                 paintSizeRows();
+
+                const summary = $("#tshirt-summary");
+                const note = $("#tshirt-card-note");
+                if (note && summary?.dataset.shirts > 0) {
+                    note.textContent =
+                        "You have " +
+                        summary.dataset.shirts +
+                        " reserved · ₹" +
+                        summary.dataset.amount;
+                }
+
                 toast("Reserved! See you on the final day.");
-                $("main")?.scrollTo({ top: 0, behavior: "smooth" });
             })
             .catch((data) => {
                 errors.textContent = Object.values(data.errors || {})

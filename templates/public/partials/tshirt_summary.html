@@ -1,6 +1,7 @@
 {# What this household has reserved so far. Swapped in after each order. #}
 {% if my_orders %}
-<div id="tshirt-summary" class="glass-panel p-4 rounded-3xl border border-fest-green/40 space-y-3 fade-in">
+<div id="tshirt-summary" data-shirts="{{ my_shirt_count }}" data-amount="{{ my_shirt_total }}"
+     class="glass-panel p-4 rounded-3xl border border-fest-green/40 space-y-3 fade-in">
     <div class="flex items-center gap-2">
         <div class="w-8 h-8 shrink-0 rounded-full bg-fest-green/20 text-fest-green flex items-center justify-center">
             <i class="fa-solid fa-check"></i>
@@ -30,5 +31,5 @@
     </p>
 </div>
 {% else %}
-<div id="tshirt-summary"></div>
+<div id="tshirt-summary" data-shirts="0" data-amount="0"></div>
 {% endif %}

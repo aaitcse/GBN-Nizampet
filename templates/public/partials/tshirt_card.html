@@ -1,0 +1,33 @@
+{# Sits among the poll cards. Tapping it opens the order form. #}
+<button type="button" id="open-tshirt"
+        class="w-full text-left glass-panel p-4 rounded-3xl border border-fest-accent/30 flex items-center gap-3 active:scale-[0.99] transition">
+    <span class="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-fest-accent to-fest-purple flex items-center justify-center shadow-lg">
+        <i class="fa-solid fa-shirt text-white text-xl"></i>
+    </span>
+
+    <span class="flex-1 min-w-0">
+        <span class="flex items-center gap-2 flex-wrap">
+            <span class="text-sm font-bold text-white">Festival T-Shirt</span>
+            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-fest-gold/20 text-fest-gold border border-fest-gold/40">
+                &#8377;{{ tshirt_price }}
+            </span>
+            {% if not tshirt_open %}
+            <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-gray-500/20 text-gray-300">Closed</span>
+            {% endif %}
+        </span>
+        <span class="block text-[11px] text-gray-400 mt-0.5 leading-snug">
+            One last day. Let&rsquo;s walk together.
+        </span>
+        <span id="tshirt-card-note" class="block text-[10px] font-bold text-fest-cyan mt-1">
+            {% if my_shirt_count %}
+            You have {{ my_shirt_count }} reserved &middot; &#8377;{{ my_shirt_total }}
+            {% elif tshirt_open %}
+            Tap to reserve &rarr;
+            {% else %}
+            Orders have closed
+            {% endif %}
+        </span>
+    </span>
+
+    <i class="fa-solid fa-chevron-right text-gray-500 text-xs shrink-0"></i>
+</button>
