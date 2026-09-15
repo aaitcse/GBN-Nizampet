@@ -20,7 +20,9 @@ services:
     # Migrations run at startup, not during the build: the build environment
     # cannot reach the private database network, the running service can.
     startCommand: "./start.sh"
-    healthCheckPath: /
+    # Checks the database and that migrations ran, so a bad deploy reports the
+    # reason in the log instead of serving a blank 500.
+    healthCheckPath: /healthz/
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4

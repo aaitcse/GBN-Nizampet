@@ -8,6 +8,7 @@ app_name = "festival"
 urlpatterns = [
     # ---- public app -------------------------------------------------------
     path("", views.public_app, name="public_app"),
+    path("healthz/", views.healthz, name="healthz"),
     path("partials/events/", views.events_partial, name="events_partial"),
     path("partials/gallery/", views.gallery_partial, name="gallery_partial"),
     path("partials/polls/", views.polls_partial, name="polls_partial"),

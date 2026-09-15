@@ -79,7 +79,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-37 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+39 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together
@@ -177,6 +177,13 @@ Build Command `./build.sh`, Start Command `./start.sh`, and add a Postgres insta
 region** whose `DATABASE_URL` you paste into the service environment.
 
 ### Troubleshooting
+
+**Every page returns 500 after a deploy** - the database has no tables yet, which means
+`start.sh` did not run. Render stores the start command when the blueprint is *synced*, not on
+every deploy, so a service created before `start.sh` existed still runs the old command. Fix it
+with Blueprint > **Manual Sync** (or set Start Command to `./start.sh` in the service settings).
+`GET /healthz/` tells you which failure it is: `database unreachable` or `migrations not
+applied`, and the traceback is in the service log.
 
 **`failed to resolve host 'dpg-...'` / `could not translate host name`** - the web service and the
 database are in different regions. Render's internal database hostnames resolve only within one

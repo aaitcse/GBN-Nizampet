@@ -1,12 +1,14 @@
 """Views for the public festival app and the organiser console."""
 
 import csv
+import logging
 from datetime import date
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connections, transaction
+from django.db.migrations.executor import MigrationExecutor
 from django.db.models import Avg, Count, F, Q, Sum, Value
 from django.db.models.functions import Greatest
 from django.http import HttpResponse, JsonResponse
@@ -29,6 +31,8 @@ from .models import (
     current_festival_day,
     festival_day_choices,
 )
+
+logger = logging.getLogger(__name__)
 
 GALLERY_CATEGORIES = [("All", "All Photos")] + list(Photo.CATEGORY_CHOICES)
 
@@ -204,6 +208,29 @@ def home_context(request):
         "vibe_chips": VIBE_CHIPS,
         "know_before": KNOW_BEFORE,
     }
+
+
+def healthz(request):
+    """Deploy probe: is the database reachable, and have migrations run?
+
+    Returns 503 with a short reason rather than a blank 500, so a failing
+    deploy says what is wrong in the platform log.
+    """
+    try:
+        connections["default"].cursor().close()
+    except Exception as exc:
+        logger.error("Health check failed to reach the database: %s", exc)
+        return JsonResponse({"ok": False, "error": "database unreachable"}, status=503)
+
+    executor = MigrationExecutor(connections["default"])
+    missing = executor.migration_plan(executor.loader.graph.leaf_nodes())
+    if missing:
+        logger.error("Health check found %s unapplied migration(s).", len(missing))
+        return JsonResponse(
+            {"ok": False, "error": "migrations not applied", "pending": len(missing)}, status=503
+        )
+
+    return JsonResponse({"ok": True, "events": Event.objects.count()})
 
 
 # --------------------------------------------------------------------------- #

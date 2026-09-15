@@ -248,6 +248,16 @@ class PublicAppTests(TestCase):
         self.assertEqual(Feedback.objects.count(), 0)
 
 
+class HealthCheckTests(TestCase):
+    def test_healthz_reports_ok_on_a_migrated_database(self):
+        response = self.client.get(reverse("festival:healthz"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+
+    def test_healthz_needs_no_login(self):
+        self.assertEqual(self.client.get(reverse("festival:healthz")).status_code, 200)
+
+
 class ConsoleAccessTests(TestCase):
     def test_console_requires_staff_login(self):
         response = self.client.get(reverse("festival:console_overview"))
