@@ -14,8 +14,8 @@ organisers can see and manage.
 | Home | Landing screen: hero banner, a visitor counter in the footer, countdown to the festival, dates and venue, live stat tiles, a cross-day "happening soon" carousel, a photo wall, a poll teaser and the practical notes - every card taps through to its tab |
 | Events | Day 1..Day N schedule built from the festival dates and opening on today's day, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
 | Gallery | Approved photos **and short video clips**, filtered by Main Stage / Crowd Vibes / Night Lights; tap for a full-screen lightbox that plays clips; like an item (once per device); add your own from the camera roll |
-| Polls | Vote once per poll per device, then see live percentages with your own pick highlighted |
-| T-Shirt | Reserve festival t-shirts for the final day: flat number (digits), mobile, name, then how many shirts and a size for each one, with the amount due adding up live. Matching sizes fold into one line, and repeat orders add to the household running total |
+| Polls | The t-shirt reservation sits at the top; below it, vote once per poll per device and see live percentages with your own pick highlighted |
+| Polls (t-shirts) | Above the polls: reserve festival t-shirts for the final day - flat number (digits), mobile, name, then how many shirts and a size for each one, with the amount due adding up live. Matching sizes fold into one line, and repeat orders add to the household running total |
 | Feedback | Star rating, category, comment and optional contact - lands in the organiser inbox |
 
 **Organiser console** (`/console/`, staff login required):

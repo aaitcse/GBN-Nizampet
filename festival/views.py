@@ -262,7 +262,7 @@ def order_tshirt(request):
         if is_ajax(request):
             return JsonResponse({"ok": False, "errors": {"__all__": [message]}}, status=400)
         messages.error(request, message)
-        return redirect(reverse("festival:public_app") + "?tab=tshirt")
+        return redirect(reverse("festival:public_app") + "?tab=polls")
 
     form = TshirtOrderForm(request.POST)
     if form.is_valid():
@@ -273,12 +273,12 @@ def order_tshirt(request):
         messages.success(
             request, f"{shirts} shirt(s) reserved for flat {form.cleaned_data['flat_number']}."
         )
-        return redirect(reverse("festival:public_app") + "?tab=tshirt")
+        return redirect(reverse("festival:public_app") + "?tab=polls")
 
     if is_ajax(request):
         return JsonResponse({"ok": False, "errors": form.errors}, status=400)
     messages.error(request, "Check the form and try again.")
-    return redirect(reverse("festival:public_app") + "?tab=tshirt")
+    return redirect(reverse("festival:public_app") + "?tab=polls")
 
 
 def healthz(request):
