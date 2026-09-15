@@ -390,6 +390,10 @@
                 "</span>";
             const select = template.content.firstElementChild.cloneNode(true);
             select.name = "size_" + index;
+            select.addEventListener("change", () => {
+                select.classList.remove("border-rose-500");
+                paintPreview();
+            });
             row.appendChild(select);
             list.appendChild(row);
         }
@@ -400,8 +404,51 @@
             row.querySelector("select").name = "size_" + (i + 1);
         });
 
+        paintPreview();
+    }
+
+    // Preview: what they are reserving, grouped by size, and what it costs.
+    function paintPreview() {
+        const preview = $("#ts-preview");
         const total = $("#ts-total");
-        if (total) total.textContent = wanted * Number(total.dataset.price);
+        if (!preview || !total) return;
+
+        const chosen = $$(".ts-size").filter((s) => s.value);
+        const counts = new Map();
+        chosen.forEach((select) => {
+            const label = select.options[select.selectedIndex].text;
+            counts.set(label, (counts.get(label) || 0) + 1);
+        });
+
+        if (!counts.size) {
+            preview.innerHTML =
+                '<p class="text-[11px] text-gray-500">Pick a size to see your order.</p>';
+        } else {
+            const price = Number(total.dataset.price);
+            preview.innerHTML = Array.from(counts.entries())
+                .map(
+                    ([label, count]) =>
+                        '<div class="flex justify-between text-[11px]">' +
+                        '<span class="text-gray-200 font-bold">' +
+                        count +
+                        " × " +
+                        label +
+                        '</span><span class="text-gray-400">₹' +
+                        count * price +
+                        "</span></div>"
+                )
+                .join("");
+
+            const pending = shirtCount() - chosen.length;
+            if (pending > 0) {
+                preview.innerHTML +=
+                    '<p class="text-[11px] text-fest-gold font-bold">' +
+                    pending +
+                    " more still need a size</p>";
+            }
+        }
+
+        total.textContent = chosen.length * Number(total.dataset.price);
     }
 
     $("#ts-qty")?.addEventListener("input", paintSizeRows);
@@ -418,6 +465,19 @@
     tshirtForm?.addEventListener("submit", (e) => {
         e.preventDefault();
         const errors = $("#tshirt-error");
+
+        const missing = $$(".ts-size").filter((select) => !select.value);
+        if (missing.length) {
+            missing.forEach((select) => select.classList.add("border-rose-500"));
+            errors.textContent =
+                missing.length === 1
+                    ? "Pick a size for the remaining shirt."
+                    : "Pick a size for all " + missing.length + " remaining shirts.";
+            errors.classList.remove("hidden");
+            missing[0].focus();
+            return;
+        }
+
         post(tshirtForm.action, new FormData(tshirtForm))
             .then((r) => (r.ok ? r.text() : r.json().then((d) => Promise.reject(d))))
             .then((html) => {

@@ -1,97 +1,115 @@
-{# Festival t-shirt reservation for the final day. #}
+{# Festival t-shirt reservation: pitch, summary and form as one card. #}
 
-<div class="relative rounded-3xl overflow-hidden border border-white/10 p-5 bg-gradient-to-br from-fest-accent/30 via-fest-purple/20 to-fest-cyan/20">
-    <h2 class="text-lg font-extrabold text-white leading-snug">One last day. Let&rsquo;s walk together.</h2>
-    <p class="text-xs text-gray-200 mt-3 leading-relaxed">
-        Dhol in front, our whole community behind, and everyone in the same colour.
-    </p>
-    <p class="text-xs text-white font-bold mt-2.5 leading-relaxed">
-        Reserve your festival T-shirt and join us for the final procession!
-    </p>
-    <span class="inline-block mt-4 px-3 py-1.5 rounded-full bg-black/40 border border-white/20 text-xs font-black text-white">
-        &#8377;{{ tshirt_price }} each
-    </span>
-</div>
+<div class="rounded-3xl border border-white/10 overflow-hidden bg-fest-card shadow-2xl">
 
-{% include "public/partials/tshirt_summary.html" %}
+    <!-- Pitch -->
+    <div class="p-5 bg-gradient-to-br from-fest-accent/30 via-fest-purple/20 to-fest-cyan/20">
+        <h2 class="text-lg font-extrabold text-white leading-snug">One last day. Let&rsquo;s walk together.</h2>
+        <p class="text-xs text-gray-200 mt-3 leading-relaxed">
+            Dhol in front, our whole community behind, and everyone in the same colour.
+        </p>
+        <p class="text-xs text-white font-bold mt-2.5 leading-relaxed">
+            Reserve your festival T-shirt and join us for the final procession!
+        </p>
+        <span class="inline-block mt-4 px-3 py-1.5 rounded-full bg-black/40 border border-white/20 text-xs font-black text-white">
+            &#8377;{{ tshirt_price }} each
+        </span>
+    </div>
 
-{% if tshirt_open %}
-<form id="tshirt-form" method="post" action="{% url 'festival:order_tshirt' %}"
-      class="glass-panel p-4 rounded-3xl space-y-3.5 border border-white/10">
-    {% csrf_token %}
-    <h3 class="text-sm font-extrabold text-white">Reserve your shirts</h3>
+    {% if my_orders %}
+    <div class="border-t border-white/10">
+        {% include "public/partials/tshirt_summary.html" %}
+    </div>
+    {% else %}
+    {% include "public/partials/tshirt_summary.html" %}
+    {% endif %}
 
-    <div class="grid grid-cols-2 gap-3">
+    {% if tshirt_open %}
+    <form id="tshirt-form" method="post" action="{% url 'festival:order_tshirt' %}"
+          class="p-4 space-y-3.5 border-t border-white/10">
+        {% csrf_token %}
+        <h3 class="text-sm font-extrabold text-white">Reserve your shirts</h3>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label for="ts-flat" class="block text-[11px] font-bold text-gray-300 mb-1">Flat number *</label>
+                <input type="text" name="flat_number" id="ts-flat" required inputmode="numeric"
+                       pattern="[0-9]*" maxlength="6" data-digits-only placeholder="e.g. 734"
+                       class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+            </div>
+            <div>
+                <label for="ts-mobile" class="block text-[11px] font-bold text-gray-300 mb-1">Mobile *</label>
+                <input type="tel" name="mobile" id="ts-mobile" required inputmode="numeric"
+                       pattern="[0-9]*" maxlength="10" data-digits-only placeholder="10 digits"
+                       class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+            </div>
+        </div>
+
         <div>
-            <label for="ts-flat" class="block text-[11px] font-bold text-gray-300 mb-1">Flat number *</label>
-            <input type="text" name="flat_number" id="ts-flat" required inputmode="numeric"
-                   pattern="[0-9]*" maxlength="6" data-digits-only placeholder="e.g. 734"
-                   class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+            <label for="ts-name" class="block text-[11px] font-bold text-gray-300 mb-1">Your name *</label>
+            <input type="text" name="name" id="ts-name" required placeholder="So we know who to hand it to"
+                   class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
         </div>
-        <div>
-            <label for="ts-mobile" class="block text-[11px] font-bold text-gray-300 mb-1">Mobile *</label>
-            <input type="tel" name="mobile" id="ts-mobile" required inputmode="numeric"
-                   pattern="[0-9]*" maxlength="10" data-digits-only placeholder="10 digits"
-                   class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+
+        <div class="space-y-2">
+            <label class="block text-[11px] font-bold text-gray-300">How many T-shirts? *</label>
+            <div class="flex items-stretch rounded-2xl border border-white/10 bg-fest-cardLight overflow-hidden w-40">
+                <button type="button" id="ts-minus" aria-label="One fewer"
+                        class="w-12 shrink-0 text-xl font-black text-gray-300 hover:text-white active:bg-white/10 transition">&minus;</button>
+                <input type="number" name="quantity" id="ts-qty" value="1" min="1" max="20" inputmode="numeric"
+                       class="no-spinner w-full min-w-0 text-center bg-transparent border-x border-white/10 py-2.5 text-lg font-black text-white focus:outline-none">
+                <button type="button" id="ts-plus" aria-label="One more"
+                        class="w-12 shrink-0 bg-fest-accent text-xl font-black text-white active:brightness-110 transition">+</button>
+            </div>
         </div>
-    </div>
 
-    <div>
-        <label for="ts-name" class="block text-[11px] font-bold text-gray-300 mb-1">Your name *</label>
-        <input type="text" name="name" id="ts-name" required placeholder="So we know who to hand it to"
-               class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
-    </div>
-
-    <div class="space-y-2">
-        <label class="block text-[11px] font-bold text-gray-300">How many T-shirts? *</label>
-        <div class="flex items-stretch rounded-2xl border border-white/10 bg-fest-card overflow-hidden w-40">
-            <button type="button" id="ts-minus" aria-label="One fewer"
-                    class="w-12 shrink-0 text-xl font-black text-gray-300 hover:text-white active:bg-white/10 transition">&minus;</button>
-            <input type="number" name="quantity" id="ts-qty" value="1" min="1" max="20" inputmode="numeric"
-                   class="no-spinner w-full min-w-0 text-center bg-transparent border-x border-white/10 py-2.5 text-lg font-black text-white focus:outline-none">
-            <button type="button" id="ts-plus" aria-label="One more"
-                    class="w-12 shrink-0 bg-fest-accent text-xl font-black text-white active:brightness-110 transition">+</button>
+        <div class="space-y-2">
+            <label class="block text-[11px] font-bold text-gray-300">Size for each one *</label>
+            <div id="ts-sizes" class="space-y-2">
+                <!-- One row per shirt, built from the count above -->
+            </div>
         </div>
-    </div>
 
-    <div class="space-y-2">
-        <label class="block text-[11px] font-bold text-gray-300">Size for each one *</label>
-        <div id="ts-sizes" class="space-y-2">
-            <!-- One row per shirt, built from the count above -->
+        {# Hidden master list the size rows are cloned from. #}
+        <template id="ts-size-template">
+            <select class="ts-size select-field flex-1 min-w-0 bg-fest-cardLight border border-white/10 rounded-xl pl-3 py-2.5 text-xs font-bold text-white focus:outline-none focus:border-fest-accent">
+                <option value="" selected>Select size</option>
+                {% for value, label in tshirt_sizes %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </template>
+
+        <!-- Live preview of what is about to be reserved -->
+        <div class="rounded-xl bg-white/5 border border-white/10 p-3 space-y-2">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Your order</p>
+            <div id="ts-preview" class="space-y-1">
+                <p class="text-[11px] text-gray-500">Pick a size to see your order.</p>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-white/10">
+                <span class="text-[11px] font-bold text-gray-300">Amount to pay</span>
+                <span class="text-lg font-black text-fest-gold">&#8377;<span id="ts-total" data-price="{{ tshirt_price }}">0</span></span>
+            </div>
         </div>
+
+        <p id="tshirt-error" class="hidden text-[11px] text-rose-400 font-bold"></p>
+
+        <button type="submit" id="ts-submit"
+                class="w-full py-3 rounded-xl bg-gradient-to-r from-fest-accent via-fest-purple to-fest-cyan text-white font-extrabold text-xs shadow-lg active:scale-95 transition">
+            RESERVE MY T-SHIRT
+        </button>
+
+        <p class="text-[10px] text-gray-500 text-center">
+            Add more any time - a second order adds to your list, it does not replace it.
+        </p>
+    </form>
+    {% else %}
+    <div class="p-5 text-center space-y-2 border-t border-white/10">
+        <i class="fa-solid fa-shirt text-2xl text-gray-500"></i>
+        <h3 class="text-sm font-bold text-white">Orders are closed</h3>
+        <p class="text-[11px] text-gray-400">
+            The count has gone to the printer. Find a volunteer at the pandal if you missed out.
+        </p>
     </div>
-
-    {# Hidden master list the size rows are cloned from. #}
-    <template id="ts-size-template">
-        <select class="ts-size select-field flex-1 min-w-0 bg-fest-card border border-white/10 rounded-xl pl-3 py-2.5 text-xs font-bold text-white focus:outline-none focus:border-fest-accent">
-            {% for value, label in tshirt_sizes %}
-            <option value="{{ value }}" {% if value == "M" %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-    </template>
-
-    <div class="flex justify-between items-center px-3 py-2.5 rounded-xl bg-white/5 border border-white/10">
-        <span class="text-[11px] font-bold text-gray-300">Amount to pay</span>
-        <span class="text-lg font-black text-fest-gold">&#8377;<span id="ts-total" data-price="{{ tshirt_price }}">{{ tshirt_price }}</span></span>
-    </div>
-
-    <p id="tshirt-error" class="hidden text-[11px] text-rose-400 font-bold"></p>
-
-    <button type="submit"
-            class="w-full py-3 rounded-xl bg-gradient-to-r from-fest-accent via-fest-purple to-fest-cyan text-white font-extrabold text-xs shadow-lg active:scale-95 transition">
-        RESERVE MY T-SHIRT
-    </button>
-
-    <p class="text-[10px] text-gray-500 text-center">
-        Add more any time - a second order adds to your list, it does not replace it.
-    </p>
-</form>
-{% else %}
-<div class="glass-panel p-5 rounded-3xl border border-white/10 text-center space-y-2">
-    <i class="fa-solid fa-shirt text-2xl text-gray-500"></i>
-    <h3 class="text-sm font-bold text-white">Orders are closed</h3>
-    <p class="text-[11px] text-gray-400">
-        The count has gone to the printer. Find a volunteer at the pandal if you missed out.
-    </p>
+    {% endif %}
 </div>
-{% endif %}
