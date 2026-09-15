@@ -174,6 +174,16 @@ FEST_DATES = os.environ.get("FEST_DATES", "14 - 20 September 2026")
 # The schedule builds its Day 1..Day N tabs from this range.
 FEST_START_DATE = os.environ.get("FEST_START_DATE", "2026-09-14")
 FEST_END_DATE = os.environ.get("FEST_END_DATE", "2026-09-20")
+# Festival t-shirts for the final day. Set FEST_TSHIRT_OPEN=0 to close orders
+# once the count has gone to the printer.
+FEST_TSHIRT_OPEN = os.environ.get("FEST_TSHIRT_OPEN", "1") == "1"
+FEST_TSHIRT_PRICE = int(os.environ.get("FEST_TSHIRT_PRICE", 200))
+FEST_TSHIRT_OCCASION = os.environ.get("FEST_TSHIRT_OCCASION", "Nimajjanam Day")
+FEST_TSHIRT_NOTE = os.environ.get(
+    "FEST_TSHIRT_NOTE",
+    "Pay when you collect at the pandal. Orders close once the count goes to the printer.",
+)
+
 FEST_WELCOME = os.environ.get(
     "FEST_WELCOME",
     "Seven days of aarti, music, food and light across the campus. "

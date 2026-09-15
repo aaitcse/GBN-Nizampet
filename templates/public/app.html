@@ -129,6 +129,11 @@
             </div>
         </section>
 
+        <!-- TAB 5: FESTIVAL T-SHIRT -->
+        <section id="tab-tshirt" class="tab-content p-4 space-y-4 {% if active_tab != 'tshirt' %}hidden{% endif %}">
+            {% include "public/partials/tshirt.html" %}
+        </section>
+
         <!-- TAB 4: FEEDBACK -->
         <section id="tab-feedback" class="tab-content p-4 space-y-4 {% if active_tab != 'feedback' %}hidden{% endif %}">
             <div>
@@ -193,23 +198,27 @@
     <!-- Bottom navigation -->
     <nav class="shrink-0 glass-nav z-30 px-2 py-2 safe-pb">
         <div class="flex justify-around items-center">
-            <button type="button" data-tab="home" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'home' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+            <button type="button" data-tab="home" class="nav-btn flex flex-col items-center py-1 px-2 transition {% if active_tab == 'home' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-house text-base"></i>
                 <span class="text-[10px] font-extrabold mt-0.5">Home</span>
             </button>
-            <button type="button" data-tab="events" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'events' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+            <button type="button" data-tab="events" class="nav-btn flex flex-col items-center py-1 px-2 transition {% if active_tab == 'events' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-calendar-days text-base"></i>
                 <span class="text-[10px] font-extrabold mt-0.5">Events</span>
             </button>
-            <button type="button" data-tab="gallery" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'gallery' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+            <button type="button" data-tab="gallery" class="nav-btn flex flex-col items-center py-1 px-2 transition {% if active_tab == 'gallery' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-images text-base"></i>
                 <span class="text-[10px] font-extrabold mt-0.5">Gallery</span>
             </button>
-            <button type="button" data-tab="polls" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'polls' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+            <button type="button" data-tab="polls" class="nav-btn flex flex-col items-center py-1 px-2 transition {% if active_tab == 'polls' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-chart-simple text-base"></i>
                 <span class="text-[10px] font-extrabold mt-0.5">Polls</span>
             </button>
-            <button type="button" data-tab="feedback" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'feedback' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+            <button type="button" data-tab="tshirt" class="nav-btn flex flex-col items-center py-1 px-2 transition {% if active_tab == 'tshirt' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="fa-solid fa-shirt text-base"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">T-Shirt</span>
+            </button>
+            <button type="button" data-tab="feedback" class="nav-btn flex flex-col items-center py-1 px-2 transition {% if active_tab == 'feedback' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-comment-dots text-base"></i>
                 <span class="text-[10px] font-extrabold mt-0.5">Feedback</span>
             </button>

@@ -20,6 +20,7 @@ from .models import (
     PhotoLike,
     Poll,
     PollOption,
+    TshirtOrder,
     Vote,
     category_image,
     current_festival_day,
@@ -418,6 +419,112 @@ class ViewCountTests(TestCase):
         self.assertContains(response, "App views")
         self.assertContains(response, "App views, last 7 days")
         self.assertEqual(response.context["views_total"], 1)
+
+
+class TshirtOrderTests(TestCase):
+    def order(self, **overrides):
+        payload = {"flat_number": "b-404", "mobile": "98765 43210", "size": "L", "quantity": 2}
+        payload.update(overrides)
+        return self.client.post(
+            reverse("festival:order_tshirt"), payload, HTTP_X_REQUESTED_WITH="fetch"
+        )
+
+    def test_order_is_recorded_with_the_amount_due(self):
+        response = self.order(name="Pavan")
+        self.assertEqual(response.status_code, 200)
+
+        order = TshirtOrder.objects.get()
+        self.assertEqual(order.flat_number, "B-404")  # normalised to upper case
+        self.assertEqual(order.mobile, "9876543210")  # spaces stripped
+        self.assertEqual(order.quantity, 2)
+        self.assertEqual(order.amount, 400)  # 2 x 200
+        self.assertFalse(order.is_collected)
+
+    def test_summary_comes_back_with_the_running_total(self):
+        self.order()
+        response = self.order(size="Kids-M", quantity=1)
+        self.assertContains(response, "You are on the list")
+        self.assertContains(response, "3 shirts total")
+        self.assertContains(response, "600")
+
+    def test_mobile_must_be_ten_digits(self):
+        response = self.order(mobile="12345")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("mobile", response.json()["errors"])
+        self.assertEqual(TshirtOrder.objects.count(), 0)
+
+    def test_indian_country_code_is_accepted_and_stripped(self):
+        self.order(mobile="+91 98765 43210")
+        self.assertEqual(TshirtOrder.objects.get().mobile, "9876543210")
+
+    def test_quantity_is_capped(self):
+        response = self.order(quantity=50)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(TshirtOrder.objects.count(), 0)
+
+    @override_settings(FEST_TSHIRT_OPEN=False)
+    def test_orders_are_refused_once_closed(self):
+        response = self.order()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(TshirtOrder.objects.count(), 0)
+        page = self.client.get(reverse("festival:public_app"), {"tab": "tshirt"})
+        self.assertContains(page, "Orders are closed")
+
+    @override_settings(FEST_TSHIRT_PRICE=250)
+    def test_price_comes_from_settings(self):
+        self.order(quantity=3)
+        self.assertEqual(TshirtOrder.objects.get().amount, 750)
+        self.assertContains(self.client.get(reverse("festival:public_app")), "250")
+
+    def test_a_device_only_sees_its_own_orders(self):
+        self.order()
+        TshirtOrder.objects.create(flat_number="C-101", mobile="9000000000", size="S", quantity=5)
+
+        response = self.client.get(reverse("festival:public_app"), {"tab": "tshirt"})
+        self.assertEqual(response.context["my_shirt_count"], 2)
+        self.assertNotContains(response, "C-101")
+
+
+class TshirtConsoleTests(TestCase):
+    def setUp(self):
+        get_user_model().objects.create_user("organiser", password="pw12345!", is_staff=True)
+        self.client.login(username="organiser", password="pw12345!")
+        TshirtOrder.objects.create(flat_number="A-101", mobile="9000000001", size="M", quantity=2)
+        TshirtOrder.objects.create(flat_number="A-102", mobile="9000000002", size="M", quantity=1)
+        self.big = TshirtOrder.objects.create(
+            flat_number="B-201", mobile="9000000003", size="XL", quantity=4
+        )
+
+    def test_order_sheet_totals_and_size_breakdown(self):
+        response = self.client.get(reverse("festival:console_tshirts"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["total_shirts"], 7)
+        self.assertEqual(response.context["total_amount"], 1400)
+        self.assertEqual(response.context["total_orders"], 3)
+
+        sizes = {row["size"]: row["shirts"] for row in response.context["by_size"]}
+        self.assertEqual(sizes, {"M": 3, "XL": 4})
+
+    def test_marking_an_order_handed_over(self):
+        self.client.post(reverse("festival:console_tshirt_action", args=[self.big.id, "toggle"]))
+        self.big.refresh_from_db()
+        self.assertTrue(self.big.is_collected)
+
+        response = self.client.get(reverse("festival:console_tshirts"))
+        self.assertEqual(response.context["collected_shirts"], 4)
+        self.assertEqual(response.context["pending_shirts"], 3)
+
+    def test_export_lists_every_order(self):
+        response = self.client.get(reverse("festival:console_tshirt_export"))
+        body = response.content.decode()
+        self.assertEqual(response["Content-Type"], "text/csv")
+        for flat in ["A-101", "A-102", "B-201"]:
+            self.assertIn(flat, body)
+
+    def test_order_sheet_needs_staff(self):
+        self.client.logout()
+        response = self.client.get(reverse("festival:console_tshirts"))
+        self.assertEqual(response.status_code, 302)
 
 
 class HealthCheckTests(TestCase):

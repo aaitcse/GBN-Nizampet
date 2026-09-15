@@ -326,6 +326,40 @@
         $("#feedback-form").classList.remove("hidden");
     });
 
+    // ------------------------------------------------------------- t-shirts
+    const tshirtForm = $("#tshirt-form");
+
+    function paintTshirtTotal() {
+        const total = $("#ts-total");
+        if (!total) return;
+        const qty = Math.max(1, Math.min(20, Number($("#ts-qty").value) || 1));
+        total.textContent = qty * Number(total.dataset.price);
+    }
+
+    $("#ts-qty")?.addEventListener("input", paintTshirtTotal);
+    paintTshirtTotal();
+
+    tshirtForm?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const errors = $("#tshirt-error");
+        post(tshirtForm.action, new FormData(tshirtForm))
+            .then((r) => (r.ok ? r.text() : r.json().then((d) => Promise.reject(d))))
+            .then((html) => {
+                $("#tshirt-summary").outerHTML = html;
+                errors.classList.add("hidden");
+                tshirtForm.reset();
+                paintTshirtTotal();
+                toast("Reserved! See you on the final day.");
+                $("main")?.scrollTo({ top: 0, behavior: "smooth" });
+            })
+            .catch((data) => {
+                errors.textContent = Object.values(data.errors || {})
+                    .flat()
+                    .join(" ");
+                errors.classList.remove("hidden");
+            });
+    });
+
     // Fade out any server-rendered messages.
     setTimeout(() => $$("#toast-area .toast").forEach((t) => t.remove()), 3600);
     paintStars(Number(ratingInput.value));

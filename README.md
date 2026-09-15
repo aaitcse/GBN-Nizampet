@@ -15,6 +15,7 @@ organisers can see and manage.
 | Events | Day 1..Day N schedule built from the festival dates and opening on today's day, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
 | Gallery | Approved photos **and short video clips**, filtered by Main Stage / Crowd Vibes / Night Lights; tap for a full-screen lightbox that plays clips; like an item (once per device); add your own from the camera roll |
 | Polls | Vote once per poll per device, then see live percentages with your own pick highlighted |
+| T-Shirt | Reserve festival t-shirts for the final day: flat number, mobile, size and quantity, with the amount due adding up live. Submit once per size; the running total for that household shows above the form |
 | Feedback | Star rating, category, comment and optional contact - lands in the organiser inbox |
 
 **Organiser console** (`/console/`, staff login required):
@@ -23,6 +24,7 @@ organisers can see and manage.
 - **Events** - create, edit, delete, publish/unpublish; per-event bookmark counts; filter by day.
 - **Gallery** - approve, hide or delete attendee photos and clips; add official ones by file or URL.
 - **Polls** - publish a poll with 2-4 options, close/reopen it, reset its counters, delete it.
+- **T-Shirts** - the print order: shirts to print, money to collect, a size breakdown, who has been handed theirs, and a CSV export.
 - **Feedback** - filter by status or category, resolve entries, export everything to CSV.
 
 Django's own admin is also wired up at `/django-admin/` for raw data editing.
@@ -96,7 +98,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-55 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+67 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together
@@ -104,7 +106,8 @@ upload moderation, feedback validation) and every console action.
 ```
 config/            settings, root URLs
 festival/
-  models.py        Event, Bookmark, Photo, PhotoLike, Poll, PollOption, Vote, Feedback, PageView
+  models.py        Event, Bookmark, Photo, PhotoLike, Poll, PollOption, Vote, Feedback,
+                   TshirtOrder, PageView
   views.py         public views + JSON/partial endpoints + console views
   forms.py         event, photo, poll and feedback forms with themed widgets
   urls.py          all routes, namespaced as "festival"
@@ -151,6 +154,10 @@ Read from the environment (all optional in development):
 | `FEST_AUTO_APPROVE_PHOTOS` | `0` | Skip gallery moderation. |
 | `FEST_MAX_IMAGE_MB` | `10` | Largest photo an attendee may upload. |
 | `FEST_MAX_VIDEO_MB` | `25` | Largest clip an attendee may upload. |
+| `FEST_TSHIRT_OPEN` | `1` | Set to `0` to close t-shirt orders. |
+| `FEST_TSHIRT_PRICE` | `200` | Price per shirt, in rupees. |
+| `FEST_TSHIRT_OCCASION` | `Nimajjanam Day` | Label above the t-shirt pitch. |
+| `FEST_TSHIRT_NOTE` | payment note | Small print under the price. |
 | `DJANGO_SECRET_KEY` | dev key | **Set this in production.** |
 | `DJANGO_DEBUG` | `1` | Set to `0` in production. |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1,[::1]` | Comma-separated hostnames. |

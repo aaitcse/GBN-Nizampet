@@ -276,6 +276,43 @@ class Vote(models.Model):
         unique_together = ("poll", "session_key")
 
 
+class TshirtOrder(models.Model):
+    """A household reserving festival t-shirts for the final day."""
+
+    SIZE_CHOICES = [
+        ("Kids-S", "Kids S (2-4 yrs)"),
+        ("Kids-M", "Kids M (5-7 yrs)"),
+        ("Kids-L", "Kids L (8-10 yrs)"),
+        ("Kids-XL", "Kids XL (11-13 yrs)"),
+        ("XS", "Adult XS"),
+        ("S", "Adult S"),
+        ("M", "Adult M"),
+        ("L", "Adult L"),
+        ("XL", "Adult XL"),
+        ("XXL", "Adult XXL"),
+        ("XXXL", "Adult XXXL"),
+    ]
+
+    flat_number = models.CharField(max_length=30, help_text="Flat or villa number")
+    mobile = models.CharField(max_length=15)
+    name = models.CharField(max_length=80, blank=True)
+    size = models.CharField(max_length=10, choices=SIZE_CHOICES)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    session_key = models.CharField(max_length=64, blank=True, db_index=True)
+    is_collected = models.BooleanField(default=False, help_text="Handed over and paid")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["flat_number", "size"]
+
+    def __str__(self):
+        return f"{self.flat_number} - {self.quantity} x {self.size}"
+
+    @property
+    def amount(self):
+        return self.quantity * getattr(settings, "FEST_TSHIRT_PRICE", 200)
+
+
 class PageView(models.Model):
     """One load of the attendee app, counted for the console view metrics.
 

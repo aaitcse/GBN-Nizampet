@@ -1,0 +1,118 @@
+{% extends "console/base.html" %}
+
+{% block console %}
+<div class="flex items-center justify-between gap-3">
+    <div>
+        <h2 class="text-lg font-extrabold text-white">T-shirt orders</h2>
+        <p class="text-[11px] text-gray-400">
+            {{ total_orders }} order{{ total_orders|pluralize }} from the community
+            {% if not orders_open %}&middot; <span class="text-fest-gold font-bold">orders closed</span>{% endif %}
+        </p>
+    </div>
+    <a href="{% url 'festival:console_tshirt_export' %}"
+       class="px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-xs font-bold text-gray-200 hover:text-white">
+        <i class="fa-solid fa-file-csv mr-1"></i>Export CSV
+    </a>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Shirts to print</span>
+        <div class="text-2xl font-black text-fest-cyan mt-1">{{ total_shirts }}</div>
+    </div>
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Amount to collect</span>
+        <div class="text-2xl font-black text-fest-gold mt-1">&#8377;{{ total_amount }}</div>
+        <p class="text-[10px] text-gray-500 mt-1">at &#8377;{{ price }} each</p>
+    </div>
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Handed over</span>
+        <div class="text-2xl font-black text-emerald-400 mt-1">{{ collected_shirts }}</div>
+    </div>
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Still pending</span>
+        <div class="text-2xl font-black text-fest-accent mt-1">{{ pending_shirts }}</div>
+    </div>
+</div>
+
+{% if by_size %}
+<section class="glass-panel p-4 rounded-2xl space-y-3">
+    <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-shirt text-fest-cyan mr-1.5"></i>Size breakdown - the print order</h3>
+    <div class="space-y-2">
+        {% for row in by_size %}
+        <div class="flex items-center gap-3">
+            <span class="w-32 shrink-0 text-[11px] font-bold text-gray-300">{{ row.label }}</span>
+            <div class="flex-1 h-4 rounded-md bg-white/5 overflow-hidden">
+                <div class="h-full rounded-md bg-gradient-to-r from-fest-accent to-fest-purple" style="width: {{ row.pct }}%"></div>
+            </div>
+            <span class="w-10 shrink-0 text-right text-[11px] font-black text-white">{{ row.shirts }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<div class="flex gap-2">
+    <a href="?status=all" class="px-3 py-1.5 rounded-full text-[11px] font-bold {% if status == 'all' %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">All</a>
+    <a href="?status=pending" class="px-3 py-1.5 rounded-full text-[11px] font-bold {% if status == 'pending' %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">Not handed over</a>
+    <a href="?status=collected" class="px-3 py-1.5 rounded-full text-[11px] font-bold {% if status == 'collected' %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">Handed over</a>
+</div>
+
+<div class="glass-panel rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+            <thead class="bg-white/5 text-[10px] uppercase text-gray-400">
+                <tr>
+                    <th class="px-3 py-2.5 font-bold">Flat</th>
+                    <th class="px-3 py-2.5 font-bold">Name</th>
+                    <th class="px-3 py-2.5 font-bold">Mobile</th>
+                    <th class="px-3 py-2.5 font-bold">Size</th>
+                    <th class="px-3 py-2.5 font-bold text-right">Qty</th>
+                    <th class="px-3 py-2.5 font-bold text-right">Amount</th>
+                    <th class="px-3 py-2.5 font-bold text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr class="border-t border-white/5 {% if order.is_collected %}opacity-50{% endif %}">
+                    <td class="px-3 py-2.5 font-bold text-white whitespace-nowrap">{{ order.flat_number }}</td>
+                    <td class="px-3 py-2.5 text-gray-300">{{ order.name|default:"-" }}</td>
+                    <td class="px-3 py-2.5 text-gray-300 whitespace-nowrap">
+                        <a href="tel:{{ order.mobile }}" class="hover:text-fest-cyan">{{ order.mobile }}</a>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-200 whitespace-nowrap">{{ order.get_size_display }}</td>
+                    <td class="px-3 py-2.5 text-right font-black text-white">{{ order.quantity }}</td>
+                    <td class="px-3 py-2.5 text-right text-fest-gold font-bold">&#8377;{{ order.amount }}</td>
+                    <td class="px-3 py-2.5">
+                        <div class="flex gap-1.5 justify-end">
+                            <form method="post" action="{% url 'festival:console_tshirt_action' order.id 'toggle' %}">
+                                {% csrf_token %}
+                                <button class="px-2.5 py-1.5 rounded-lg bg-white/10 text-[11px] font-bold text-gray-200 hover:text-white whitespace-nowrap">
+                                    {% if order.is_collected %}Undo{% else %}Handed over{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'festival:console_tshirt_action' order.id 'delete' %}"
+                                  onsubmit="return confirm('Delete this order?');">
+                                {% csrf_token %}
+                                <button class="px-2.5 py-1.5 rounded-lg bg-rose-500/15 text-[11px] font-bold text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-3 py-8 text-center text-xs text-gray-500">
+                        No orders yet. Share the app and point people at the T-Shirt tab.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p class="text-[11px] text-gray-500">
+    Close orders by setting <span class="text-gray-300 font-bold">FEST_TSHIRT_OPEN=0</span>, and change the
+    price with <span class="text-gray-300 font-bold">FEST_TSHIRT_PRICE</span>.
+</p>
+{% endblock %}

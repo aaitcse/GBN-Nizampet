@@ -1,0 +1,34 @@
+{# What this household has reserved so far. Swapped in after each order. #}
+{% if my_orders %}
+<div id="tshirt-summary" class="glass-panel p-4 rounded-3xl border border-fest-green/40 space-y-3 fade-in">
+    <div class="flex items-center gap-2">
+        <div class="w-8 h-8 shrink-0 rounded-full bg-fest-green/20 text-fest-green flex items-center justify-center">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <h4 class="text-sm font-bold text-white">You are on the list</h4>
+            <p class="text-[10px] text-gray-400">Flat {{ my_orders.0.flat_number }} &middot; we will call before handover</p>
+        </div>
+    </div>
+
+    <div class="space-y-1.5">
+        {% for order in my_orders %}
+        <div class="flex justify-between items-center text-[11px] border-b border-white/5 pb-1.5 last:border-0">
+            <span class="text-gray-200 font-bold">{{ order.quantity }} &times; {{ order.get_size_display }}</span>
+            <span class="text-gray-400">&#8377;{{ order.amount }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="flex justify-between items-center pt-1 border-t border-white/10">
+        <span class="text-xs font-bold text-white">{{ my_shirt_count }} shirt{{ my_shirt_count|pluralize }} total</span>
+        <span class="text-base font-black text-fest-gold">&#8377;{{ my_shirt_total }}</span>
+    </div>
+
+    <p class="text-[10px] text-gray-500">
+        Need another size? Fill the form again - each size is its own line.
+    </p>
+</div>
+{% else %}
+<div id="tshirt-summary"></div>
+{% endif %}

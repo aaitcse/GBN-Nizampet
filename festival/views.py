@@ -19,7 +19,14 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
-from .forms import EventForm, FeedbackForm, PhotoForm, PhotoUploadForm, PollForm
+from .forms import (
+    EventForm,
+    FeedbackForm,
+    PhotoForm,
+    PhotoUploadForm,
+    PollForm,
+    TshirtOrderForm,
+)
 from .models import (
     Bookmark,
     Event,
@@ -29,6 +36,7 @@ from .models import (
     PhotoLike,
     Poll,
     PollOption,
+    TshirtOrder,
     Vote,
     current_festival_day,
     festival_day_choices,
@@ -230,6 +238,50 @@ def home_context(request):
     }
 
 
+def tshirt_context(request):
+    """Order form state, plus what this device has already reserved."""
+    mine = TshirtOrder.objects.filter(session_key=session_key(request))
+    return {
+        "tshirt_open": settings.FEST_TSHIRT_OPEN,
+        "tshirt_price": settings.FEST_TSHIRT_PRICE,
+        "tshirt_occasion": settings.FEST_TSHIRT_OCCASION,
+        "tshirt_note": settings.FEST_TSHIRT_NOTE,
+        "tshirt_sizes": TshirtOrder.SIZE_CHOICES,
+        "my_orders": mine,
+        "my_shirt_count": sum(order.quantity for order in mine),
+        "my_shirt_total": sum(order.amount for order in mine),
+    }
+
+
+@require_POST
+def order_tshirt(request):
+    if not settings.FEST_TSHIRT_OPEN:
+        message = "T-shirt orders are closed - the count has gone to the printer."
+        if is_ajax(request):
+            return JsonResponse({"ok": False, "errors": {"__all__": [message]}}, status=400)
+        messages.error(request, message)
+        return redirect(reverse("festival:public_app") + "?tab=tshirt")
+
+    form = TshirtOrderForm(request.POST)
+    if form.is_valid():
+        order = form.save(commit=False)
+        order.session_key = session_key(request)
+        order.save()
+        if is_ajax(request):
+            return render(
+                request,
+                "public/partials/tshirt_summary.html",
+                {**tshirt_context(request), "just_ordered": order},
+            )
+        messages.success(request, f"{order.quantity} shirt(s) reserved for flat {order.flat_number}.")
+        return redirect(reverse("festival:public_app") + "?tab=tshirt")
+
+    if is_ajax(request):
+        return JsonResponse({"ok": False, "errors": form.errors}, status=400)
+    messages.error(request, "Check the form and try again.")
+    return redirect(reverse("festival:public_app") + "?tab=tshirt")
+
+
 def healthz(request):
     """Deploy probe: is the database reachable, and have migrations run?
 
@@ -266,6 +318,7 @@ def public_app(request):
     context.update(gallery_context(request))
     context.update(polls_context(request))
     context.update(home_context(request))
+    context.update(tshirt_context(request))
 
     PageView.objects.create(session_key=session_key(request), tab=context["active_tab"][:20])
     return render(request, "public/app.html", context)
@@ -589,6 +642,86 @@ def console_poll_action(request, pk, action):
         poll.delete()
         messages.success(request, f"Poll '{question}' deleted.")
     return redirect("festival:console_polls")
+
+
+@staff_required
+def console_tshirts(request):
+    """The order sheet: who wants what, how many of each size, and the money."""
+    orders = TshirtOrder.objects.all()
+    if request.GET.get("status") == "pending":
+        orders = orders.filter(is_collected=False)
+    elif request.GET.get("status") == "collected":
+        orders = orders.filter(is_collected=True)
+
+    totals = TshirtOrder.objects.aggregate(shirts=Sum("quantity"), orders=Count("id"))
+    shirts = totals["shirts"] or 0
+
+    by_size = list(
+        TshirtOrder.objects.values("size").annotate(shirts=Sum("quantity")).order_by("-shirts")
+    )
+    labels = dict(TshirtOrder.SIZE_CHOICES)
+    busiest = max((row["shirts"] for row in by_size), default=0)
+    for row in by_size:
+        row["label"] = labels.get(row["size"], row["size"])
+        row["pct"] = round(row["shirts"] * 100 / busiest) if busiest else 0
+
+    collected = TshirtOrder.objects.filter(is_collected=True).aggregate(n=Sum("quantity"))["n"] or 0
+
+    return render(
+        request,
+        "console/tshirts.html",
+        {
+            "section": "tshirts",
+            "orders": orders,
+            "status": request.GET.get("status", "all"),
+            "total_shirts": shirts,
+            "total_orders": totals["orders"] or 0,
+            "total_amount": shirts * settings.FEST_TSHIRT_PRICE,
+            "collected_shirts": collected,
+            "pending_shirts": shirts - collected,
+            "by_size": by_size,
+            "price": settings.FEST_TSHIRT_PRICE,
+            "orders_open": settings.FEST_TSHIRT_OPEN,
+        },
+    )
+
+
+@staff_required
+@require_POST
+def console_tshirt_action(request, pk, action):
+    order = get_object_or_404(TshirtOrder, pk=pk)
+    if action == "toggle":
+        order.is_collected = not order.is_collected
+        order.save(update_fields=["is_collected"])
+    elif action == "delete":
+        order.delete()
+        messages.success(request, "Order removed.")
+    return redirect(request.META.get("HTTP_REFERER", reverse("festival:console_tshirts")))
+
+
+@staff_required
+def console_tshirt_export(request):
+    response = HttpResponse(content_type="text/csv")
+    stamp = timezone.localtime().strftime("%Y%m%d-%H%M")
+    brand = slugify(settings.FEST_BRAND) or "festival"
+    response["Content-Disposition"] = f'attachment; filename="{brand}-tshirts-{stamp}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Flat", "Name", "Mobile", "Size", "Quantity", "Amount (INR)", "Collected", "Ordered"])
+    for order in TshirtOrder.objects.all():
+        writer.writerow(
+            [
+                order.flat_number,
+                order.name,
+                order.mobile,
+                order.get_size_display(),
+                order.quantity,
+                order.amount,
+                "yes" if order.is_collected else "no",
+                timezone.localtime(order.created_at).strftime("%Y-%m-%d %H:%M"),
+            ]
+        )
+    return response
 
 
 @staff_required

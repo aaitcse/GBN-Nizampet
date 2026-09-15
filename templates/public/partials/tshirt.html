@@ -1,0 +1,86 @@
+{# Festival t-shirt reservation for the final day. #}
+
+<div class="relative rounded-3xl overflow-hidden border border-white/10 p-4 bg-gradient-to-br from-fest-accent/30 via-fest-purple/20 to-fest-cyan/20">
+    <span class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-fest-gold">{{ tshirt_occasion }}</span>
+    <h2 class="text-xl font-extrabold text-white mt-1 leading-tight">One last day.<br>Let us walk it together.</h2>
+    <p class="text-[11px] text-gray-200 mt-2 leading-relaxed">
+        Dhol in front, the whole community behind, every one of us in the same colour. Reserve your
+        festival t-shirt for the final procession and be in the photo we look back at all year.
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-3">
+        <span class="px-2.5 py-1 rounded-full bg-black/40 border border-white/20 text-[11px] font-black text-white">
+            &#8377;{{ tshirt_price }} each
+        </span>
+        <span class="text-[10px] text-gray-300">{{ tshirt_note }}</span>
+    </div>
+</div>
+
+{% include "public/partials/tshirt_summary.html" %}
+
+{% if tshirt_open %}
+<form id="tshirt-form" method="post" action="{% url 'festival:order_tshirt' %}"
+      class="glass-panel p-4 rounded-3xl space-y-3.5 border border-white/10">
+    {% csrf_token %}
+    <h3 class="text-sm font-extrabold text-white">Reserve your shirts</h3>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label for="ts-flat" class="block text-[11px] font-bold text-gray-300 mb-1">Flat number *</label>
+            <input type="text" name="flat_number" id="ts-flat" required placeholder="e.g. B-404"
+                   class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+        </div>
+        <div>
+            <label for="ts-mobile" class="block text-[11px] font-bold text-gray-300 mb-1">Mobile *</label>
+            <input type="tel" name="mobile" id="ts-mobile" required inputmode="numeric" placeholder="10 digits"
+                   class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+        </div>
+    </div>
+
+    <div>
+        <label for="ts-name" class="block text-[11px] font-bold text-gray-300 mb-1">Your name (optional)</label>
+        <input type="text" name="name" id="ts-name" placeholder="So we know who to call"
+               class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label for="ts-size" class="block text-[11px] font-bold text-gray-300 mb-1">Size *</label>
+            <select name="size" id="ts-size"
+                    class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-fest-accent">
+                {% for value, label in tshirt_sizes %}
+                <option value="{{ value }}" {% if value == "M" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="ts-qty" class="block text-[11px] font-bold text-gray-300 mb-1">How many *</label>
+            <input type="number" name="quantity" id="ts-qty" value="1" min="1" max="20" inputmode="numeric"
+                   class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-fest-accent">
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center px-3 py-2.5 rounded-xl bg-white/5 border border-white/10">
+        <span class="text-[11px] font-bold text-gray-300">Amount to pay</span>
+        <span class="text-lg font-black text-fest-gold">&#8377;<span id="ts-total" data-price="{{ tshirt_price }}">{{ tshirt_price }}</span></span>
+    </div>
+
+    <p id="tshirt-error" class="hidden text-[11px] text-rose-400 font-bold"></p>
+
+    <button type="submit"
+            class="w-full py-3 rounded-xl bg-gradient-to-r from-fest-accent via-fest-purple to-fest-cyan text-white font-extrabold text-xs shadow-lg active:scale-95 transition">
+        RESERVE MY T-SHIRT
+    </button>
+
+    <p class="text-[10px] text-gray-500 text-center">
+        Ordering for the whole family? Submit once per size - the list adds up below.
+    </p>
+</form>
+{% else %}
+<div class="glass-panel p-5 rounded-3xl border border-white/10 text-center space-y-2">
+    <i class="fa-solid fa-shirt text-2xl text-gray-500"></i>
+    <h3 class="text-sm font-bold text-white">Orders are closed</h3>
+    <p class="text-[11px] text-gray-400">
+        The count has gone to the printer. Find a volunteer at the pandal if you missed out.
+    </p>
+</div>
+{% endif %}

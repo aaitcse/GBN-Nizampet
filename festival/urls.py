@@ -17,6 +17,7 @@ urlpatterns = [
     path("photos/upload/", views.upload_photo, name="upload_photo"),
     path("polls/<int:pk>/vote/", views.cast_vote, name="cast_vote"),
     path("feedback/", views.submit_feedback, name="submit_feedback"),
+    path("tshirts/", views.order_tshirt, name="order_tshirt"),
     # ---- organiser console ------------------------------------------------
     path(
         "console/login/",
@@ -39,6 +40,13 @@ urlpatterns = [
     ),
     path("console/polls/", views.console_polls, name="console_polls"),
     path("console/polls/<int:pk>/<str:action>/", views.console_poll_action, name="console_poll_action"),
+    path("console/tshirts/", views.console_tshirts, name="console_tshirts"),
+    path("console/tshirts/export/", views.console_tshirt_export, name="console_tshirt_export"),
+    path(
+        "console/tshirts/<int:pk>/<str:action>/",
+        views.console_tshirt_action,
+        name="console_tshirt_action",
+    ),
     path("console/feedback/", views.console_feedback, name="console_feedback"),
     path("console/feedback/export/", views.console_feedback_export, name="console_feedback_export"),
     path(

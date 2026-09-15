@@ -1,11 +1,12 @@
 """Forms for attendee submissions and the organiser console."""
 
+import re
 from pathlib import Path
 
 from django import forms
 from django.conf import settings
 
-from .models import Event, Feedback, Photo, Poll, PollOption
+from .models import Event, Feedback, Photo, Poll, PollOption, TshirtOrder
 
 INPUT = (
     "w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2 text-sm "
@@ -137,6 +138,40 @@ class PhotoUploadForm(forms.ModelForm):
 
     def clean_author(self):
         return self.cleaned_data["author"].strip() or "Festival Fan"
+
+
+class TshirtOrderForm(forms.ModelForm):
+    """Household t-shirt reservation: flat, mobile, size and how many."""
+
+    class Meta:
+        model = TshirtOrder
+        fields = ["flat_number", "mobile", "name", "size", "quantity"]
+
+    def clean_flat_number(self):
+        flat = self.cleaned_data["flat_number"].strip().upper()
+        if not flat:
+            raise forms.ValidationError("Which flat should we deliver to?")
+        return flat
+
+    def clean_mobile(self):
+        raw = self.cleaned_data["mobile"]
+        digits = re.sub(r"\D", "", raw)
+        if digits.startswith("91") and len(digits) == 12:
+            digits = digits[2:]
+        if digits.startswith("0") and len(digits) == 11:
+            digits = digits[1:]
+        if len(digits) != 10:
+            raise forms.ValidationError("Enter a 10 digit mobile number.")
+        return digits
+
+    def clean_quantity(self):
+        quantity = self.cleaned_data["quantity"]
+        if not 1 <= quantity <= 20:
+            raise forms.ValidationError("Order between 1 and 20 shirts at a time.")
+        return quantity
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
 
 
 class FeedbackForm(forms.ModelForm):

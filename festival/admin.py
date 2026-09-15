@@ -10,6 +10,7 @@ from .models import (
     PhotoLike,
     Poll,
     PollOption,
+    TshirtOrder,
     Vote,
 )
 
@@ -60,6 +61,14 @@ class FeedbackAdmin(admin.ModelAdmin):
     @admin.display(description="Comment")
     def short_comment(self, obj):
         return obj.comment[:60] + ("..." if len(obj.comment) > 60 else "")
+
+
+@admin.register(TshirtOrder)
+class TshirtOrderAdmin(admin.ModelAdmin):
+    list_display = ("flat_number", "name", "mobile", "size", "quantity", "is_collected", "created_at")
+    list_filter = ("size", "is_collected")
+    search_fields = ("flat_number", "name", "mobile")
+    list_editable = ("is_collected",)
 
 
 @admin.register(PageView)
