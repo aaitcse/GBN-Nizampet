@@ -1,6 +1,9 @@
 """Forms for attendee submissions and the organiser console."""
 
+from pathlib import Path
+
 from django import forms
+from django.conf import settings
 
 from .models import Event, Feedback, Photo, Poll, PollOption
 
@@ -55,32 +58,79 @@ class PhotoForm(forms.ModelForm):
 
     class Meta:
         model = Photo
-        fields = ["title", "category", "image", "image_url", "author", "is_approved"]
+        fields = ["title", "category", "image", "video", "image_url", "author", "is_approved"]
         widgets = {
             "title": forms.TextInput(attrs={"class": INPUT}),
             "category": forms.Select(attrs={"class": INPUT}),
             "image": forms.ClearableFileInput(attrs={"class": FILE, "accept": "image/*"}),
+            "video": forms.ClearableFileInput(attrs={"class": FILE, "accept": "video/*"}),
             "image_url": forms.URLInput(attrs={"class": INPUT, "placeholder": "https://..."}),
             "author": forms.TextInput(attrs={"class": INPUT}),
             "is_approved": forms.CheckboxInput(attrs={"class": "w-4 h-4 accent-pink-500"}),
         }
 
 
-class PhotoUploadForm(forms.ModelForm):
-    """Attendee-facing upload: a photo from their device, nothing else.
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif"}
+VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov", ".m4v"}
 
-    Organisers can still add pictures by URL from the console; attendees at a
-    festival are holding a phone, so the file picker is the whole story.
+
+class PhotoUploadForm(forms.ModelForm):
+    """Attendee upload: one file picker that takes a photo or a short clip.
+
+    A single field is the whole interaction on a phone - the file is routed to
+    the image or video column by its type. Organisers can still add pictures by
+    URL from the console.
     """
+
+    media = forms.FileField(
+        label="Photo or video",
+        error_messages={"required": "Pick a photo or video from your device first."},
+    )
 
     class Meta:
         model = Photo
-        fields = ["title", "category", "image", "author"]
+        fields = ["title", "category", "author"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["image"].required = True
-        self.fields["image"].error_messages["required"] = "Pick a photo from your device first."
+        # The name box is optional on the modal; clean_author supplies the
+        # default. Without this, leaving it blank fails the upload outright.
+        self.fields["author"].required = False
+
+    def clean_media(self):
+        upload = self.cleaned_data["media"]
+        extension = Path(upload.name).suffix.lower()
+
+        if extension in VIDEO_EXTENSIONS:
+            limit = getattr(settings, "FEST_MAX_VIDEO_MB", 25)
+            if upload.size > limit * 1024 * 1024:
+                raise forms.ValidationError(
+                    f"That clip is {upload.size // (1024 * 1024)} MB. Keep videos under {limit} MB."
+                )
+            self.media_kind = "video"
+            return upload
+
+        if extension in IMAGE_EXTENSIONS:
+            limit = getattr(settings, "FEST_MAX_IMAGE_MB", 10)
+            if upload.size > limit * 1024 * 1024:
+                raise forms.ValidationError(f"That photo is over {limit} MB. Try a smaller one.")
+            self.media_kind = "image"
+            return upload
+
+        raise forms.ValidationError(
+            "Pick a photo (jpg, png, heic) or a short video (mp4, webm, mov)."
+        )
+
+    def save(self, commit=True):
+        item = super().save(commit=False)
+        upload = self.cleaned_data["media"]
+        if self.media_kind == "video":
+            item.video = upload
+        else:
+            item.image = upload
+        if commit:
+            item.save()
+        return item
 
     def clean_title(self):
         return self.cleaned_data["title"].strip() or "Festival Capture"

@@ -3,6 +3,7 @@
 from datetime import date, timedelta
 
 from django.conf import settings
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
 
@@ -159,7 +160,11 @@ class Bookmark(models.Model):
 
 
 class Photo(models.Model):
-    """A gallery image, either curated by the crew or submitted by an attendee."""
+    """A gallery item - a picture or a short clip - from the crew or an attendee.
+
+    The model keeps its original name so existing rows and URLs stay put; the
+    app calls this collection the Gallery.
+    """
 
     CATEGORY_CHOICES = [
         ("Stage", "Main Stage"),
@@ -170,6 +175,13 @@ class Photo(models.Model):
     title = models.CharField(max_length=160)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="Stage")
     image = models.ImageField(upload_to="gallery/", blank=True, null=True)
+    video = models.FileField(
+        upload_to="gallery/clips/",
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(["mp4", "webm", "mov", "m4v"])],
+        help_text="Short clip: mp4 or webm play everywhere",
+    )
     image_url = models.URLField(blank=True)
     author = models.CharField(max_length=80, default="Festival Fan")
     is_approved = models.BooleanField(default=False)
@@ -183,9 +195,22 @@ class Photo(models.Model):
         return self.title
 
     @property
+    def is_video(self):
+        return bool(self.video)
+
+    @property
+    def media_url(self):
+        """What to play or show: the clip for a video, the still otherwise."""
+        return self.video.url if self.video else self.display_image
+
+    @property
     def display_image(self):
         if self.image:
             return self.image.url
+        if self.video:
+            # No frame grab without ffmpeg; the player shows its own first
+            # frame, and this only backs the grid tile.
+            return self.image_url or festival_banner()
         return self.image_url or (
             "https://images.unsplash.com/photo-1492684223066-81342ee5ff30"
             "?auto=format&fit=crop&w=600&q=80"

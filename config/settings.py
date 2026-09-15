@@ -147,6 +147,10 @@ LOGGING = {
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
+# Caps on what an attendee can upload to the gallery.
+FEST_MAX_IMAGE_MB = int(os.environ.get("FEST_MAX_IMAGE_MB", 10))
+FEST_MAX_VIDEO_MB = int(os.environ.get("FEST_MAX_VIDEO_MB", 25))
+
 # Attendee submissions go live only after an organiser approves them.
 FEST_AUTO_APPROVE_PHOTOS = os.environ.get("FEST_AUTO_APPROVE_PHOTOS", "0") == "1"
 

@@ -194,7 +194,7 @@ class PublicAppTests(TestCase):
             with override_settings(MEDIA_ROOT=media):
                 response = self.client.post(
                     reverse("festival:upload_photo"),
-                    {"title": "My capture", "image": tiny_jpeg(), "category": "Crowd",
+                    {"title": "My capture", "media": tiny_jpeg(), "category": "Crowd",
                      "author": "Priya"},
                     HTTP_X_REQUESTED_WITH="fetch",
                 )
@@ -206,6 +206,70 @@ class PublicAppTests(TestCase):
                     self.client.get(reverse("festival:gallery_partial")), "My capture"
                 )
 
+    def test_video_upload_is_stored_as_a_clip(self):
+        with tempfile.TemporaryDirectory() as media:
+            with override_settings(MEDIA_ROOT=media):
+                clip = SimpleUploadedFile("aarti.mp4", b"\x00\x00\x00\x18ftypmp42" + b"0" * 64,
+                                          content_type="video/mp4")
+                response = self.client.post(
+                    reverse("festival:upload_photo"),
+                    {"title": "Evening aarti", "media": clip, "category": "Night", "author": "Ravi"},
+                    HTTP_X_REQUESTED_WITH="fetch",
+                )
+                self.assertEqual(response.status_code, 200)
+
+                item = Photo.objects.get(title="Evening aarti")
+                self.assertTrue(item.is_video)
+                self.assertFalse(item.image)
+                self.assertIn("aarti", item.video.name)
+                self.assertEqual(item.media_url, item.video.url)
+
+    def test_approved_video_renders_a_player_in_the_gallery(self):
+        with tempfile.TemporaryDirectory() as media:
+            with override_settings(MEDIA_ROOT=media):
+                item = Photo.objects.create(
+                    title="Dhol circle", category="Crowd", is_approved=True,
+                    video=SimpleUploadedFile("dhol.mp4", b"0" * 32, content_type="video/mp4"),
+                )
+                response = self.client.get(reverse("festival:gallery_partial"))
+                self.assertContains(response, "<video")
+                self.assertContains(response, 'data-kind="video"')
+                self.assertContains(response, item.video.url)
+
+    @override_settings(FEST_MAX_VIDEO_MB=1)
+    def test_oversized_clip_is_refused(self):
+        # Just over the (lowered) limit, so the test stays fast.
+        big = SimpleUploadedFile("long.mp4", b"0" * (1024 * 1024 + 2048), content_type="video/mp4")
+        response = self.client.post(
+            reverse("festival:upload_photo"),
+            {"title": "Whole evening", "media": big, "category": "Night"},
+            HTTP_X_REQUESTED_WITH="fetch",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("under 1 MB", str(response.json()["errors"]))
+        self.assertFalse(Photo.objects.filter(title="Whole evening").exists())
+
+    def test_upload_without_a_name_is_credited_to_a_festival_fan(self):
+        with tempfile.TemporaryDirectory() as media:
+            with override_settings(MEDIA_ROOT=media):
+                response = self.client.post(
+                    reverse("festival:upload_photo"),
+                    {"title": "Quick snap", "media": tiny_jpeg(), "category": "Crowd"},
+                    HTTP_X_REQUESTED_WITH="fetch",
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(Photo.objects.get(title="Quick snap").author, "Festival Fan")
+
+    def test_unsupported_file_type_is_refused(self):
+        response = self.client.post(
+            reverse("festival:upload_photo"),
+            {"title": "Programme", "category": "Stage",
+             "media": SimpleUploadedFile("notes.pdf", b"%PDF-1.4", content_type="application/pdf")},
+            HTTP_X_REQUESTED_WITH="fetch",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Photo.objects.filter(title="Programme").exists())
+
     def test_photo_upload_needs_an_actual_file(self):
         # Attendees upload from their phone; a URL alone is no longer accepted.
         response = self.client.post(
@@ -215,7 +279,7 @@ class PublicAppTests(TestCase):
             HTTP_X_REQUESTED_WITH="fetch",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn("image", response.json()["errors"])
+        self.assertIn("media", response.json()["errors"])
         self.assertFalse(Photo.objects.filter(title="Nothing attached").exists())
 
     def test_vote_counts_once_per_session(self):

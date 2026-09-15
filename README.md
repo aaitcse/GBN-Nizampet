@@ -13,7 +13,7 @@ organisers can see and manage.
 | --- | --- |
 | Home | Landing screen: hero banner, a visitor counter in the footer, countdown to the festival, dates and venue, live stat tiles, a cross-day "happening soon" carousel, a photo wall, a poll teaser and the practical notes - every card taps through to its tab |
 | Events | Day 1..Day N schedule built from the festival dates and opening on today's day, live search over title, stage and category, bookmark any event into "My Bookmarked Agenda" |
-| Photos | Approved gallery filtered by Main Stage / Crowd Vibes / Night Lights, tap for a full-screen lightbox, like a photo (once per device), upload your own from the camera roll or by URL |
+| Gallery | Approved photos **and short video clips**, filtered by Main Stage / Crowd Vibes / Night Lights; tap for a full-screen lightbox that plays clips; like an item (once per device); add your own from the camera roll |
 | Polls | Vote once per poll per device, then see live percentages with your own pick highlighted |
 | Feedback | Star rating, category, comment and optional contact - lands in the organiser inbox |
 
@@ -21,7 +21,7 @@ organisers can see and manage.
 
 - **Overview** - app view counts (total, unique devices, today, a seven day bar chart and which tab people land on); counts for events, photos, polls, votes and feedback; average rating; most-bookmarked events; latest feedback; a quick-approve strip for pending photos.
 - **Events** - create, edit, delete, publish/unpublish; per-event bookmark counts; filter by day.
-- **Photos** - approve, hide or delete attendee uploads; add official photos.
+- **Gallery** - approve, hide or delete attendee photos and clips; add official ones by file or URL.
 - **Polls** - publish a poll with 2-4 options, close/reopen it, reset its counters, delete it.
 - **Feedback** - filter by status or category, resolve entries, export everything to CSV.
 
@@ -96,7 +96,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-50 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+55 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together
@@ -148,7 +148,9 @@ Read from the environment (all optional in development):
 | `FEST_DATES` | `14 - 20 September 2026` | Display dates on the home hero. |
 | `FEST_START_DATE` / `FEST_END_DATE` | `2026-09-14` / `2026-09-20` | Drive the countdown badge **and the number of day tabs** (ISO format). |
 | `FEST_WELCOME` | short intro | Welcome paragraph under the hero. |
-| `FEST_AUTO_APPROVE_PHOTOS` | `0` | Skip photo moderation. |
+| `FEST_AUTO_APPROVE_PHOTOS` | `0` | Skip gallery moderation. |
+| `FEST_MAX_IMAGE_MB` | `10` | Largest photo an attendee may upload. |
+| `FEST_MAX_VIDEO_MB` | `25` | Largest clip an attendee may upload. |
 | `DJANGO_SECRET_KEY` | dev key | **Set this in production.** |
 | `DJANGO_DEBUG` | `1` | Set to `0` in production. |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1,[::1]` | Comma-separated hostnames. |

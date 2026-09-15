@@ -3,8 +3,8 @@
 {% block console %}
 <div class="flex items-center justify-between gap-3">
     <div>
-        <h2 class="text-lg font-extrabold text-white">Photo approvals &amp; gallery</h2>
-        <p class="text-[11px] text-gray-400">Attendee uploads stay hidden until you approve them.</p>
+        <h2 class="text-lg font-extrabold text-white">Gallery approvals</h2>
+        <p class="text-[11px] text-gray-400">Photos and clips stay hidden until you approve them.</p>
     </div>
     {% if pending_count %}
     <span class="px-2.5 py-1 rounded-full bg-fest-gold/20 border border-fest-gold/40 text-fest-gold text-[11px] font-bold">
@@ -23,11 +23,17 @@
     {% for photo in photos %}
     <article class="glass-panel rounded-2xl overflow-hidden">
         <div class="relative">
+            {% if photo.is_video %}
+            <video src="{{ photo.media_url }}" class="w-full h-40 object-cover" controls preload="metadata" playsinline></video>
+            {% else %}
             <img src="{{ photo.display_image }}" alt="{{ photo.title }}" class="w-full h-40 object-cover">
+            {% endif %}
             <span class="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded-full {% if photo.is_approved %}bg-emerald-500/80 text-white{% else %}bg-fest-gold/90 text-black{% endif %}">
                 {% if photo.is_approved %}LIVE{% else %}PENDING{% endif %}
             </span>
-            <span class="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-fest-cyan uppercase">{{ photo.get_category_display }}</span>
+            <span class="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-fest-cyan uppercase">
+                {% if photo.is_video %}<i class="fa-solid fa-video mr-1"></i>{% endif %}{{ photo.get_category_display }}
+            </span>
         </div>
         <div class="p-3 space-y-2">
             <div>
@@ -63,7 +69,7 @@
 </div>
 
 <section class="glass-panel p-5 rounded-3xl space-y-4 max-w-2xl">
-    <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-cloud-arrow-up text-fest-cyan mr-1.5"></i>Add an official photo</h3>
+    <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-cloud-arrow-up text-fest-cyan mr-1.5"></i>Add an official photo or clip</h3>
     <form method="post" enctype="multipart/form-data" class="space-y-4">
         {% csrf_token %}
         <div class="grid sm:grid-cols-2 gap-4">

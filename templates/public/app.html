@@ -89,12 +89,12 @@
         <section id="tab-gallery" class="tab-content p-4 space-y-4 {% if active_tab != 'gallery' %}hidden{% endif %}">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-extrabold text-white">Event Photos</h2>
-                    <p class="text-[11px] text-gray-400">Festival highlights &amp; attendee captures</p>
+                    <h2 class="text-xl font-extrabold text-white">Gallery</h2>
+                    <p class="text-[11px] text-gray-400">Photos and clips from around the pandal</p>
                 </div>
                 <button type="button" id="open-upload"
                         class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-fest-accent to-fest-purple text-white font-bold text-xs shadow-md active:scale-95 transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-camera"></i><span>Upload Photo</span>
+                    <i class="fa-solid fa-camera"></i><span>Add</span>
                 </button>
             </div>
 
@@ -203,7 +203,7 @@
             </button>
             <button type="button" data-tab="gallery" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'gallery' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-images text-base"></i>
-                <span class="text-[10px] font-extrabold mt-0.5">Photos</span>
+                <span class="text-[10px] font-extrabold mt-0.5">Gallery</span>
             </button>
             <button type="button" data-tab="polls" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'polls' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
                 <i class="fa-solid fa-chart-simple text-base"></i>
@@ -224,6 +224,7 @@
         </div>
         <div class="flex-1 flex items-center justify-center py-4">
             <img id="lb-image" src="" alt="" class="max-h-full max-w-full rounded-2xl object-contain shadow-2xl">
+            <video id="lb-video" src="" controls playsinline class="hidden max-h-full max-w-full rounded-2xl shadow-2xl"></video>
         </div>
         <div class="flex justify-between items-center text-xs text-gray-400 px-2">
             <span id="lb-author">By Festival Fan</span>
@@ -240,13 +241,13 @@
               class="bg-fest-card border border-white/20 rounded-3xl p-5 space-y-4 w-full max-w-xs shadow-2xl max-h-[85vh] overflow-y-auto hide-scrollbar">
             {% csrf_token %}
             <div class="flex justify-between items-center">
-                <h3 class="text-sm font-extrabold text-white">Submit Festival Photo</h3>
+                <h3 class="text-sm font-extrabold text-white">Add to the Gallery</h3>
                 <button type="button" id="upload-close" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div>
-                <label class="block text-[11px] font-bold text-gray-300 mb-1">Photo Title</label>
-                <input type="text" name="title" required placeholder="e.g. Neon Light Stage"
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">Title</label>
+                <input type="text" name="title" required placeholder="e.g. Dhol tasha circle"
                        class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2 text-xs text-white">
             </div>
 
@@ -257,10 +258,10 @@
             </div>
 
             <div>
-                <label class="block text-[11px] font-bold text-gray-300 mb-1">Your Photo</label>
-                <input type="file" name="image" accept="image/*" required
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">Photo or Video</label>
+                <input type="file" name="media" accept="image/*,video/*" required
                        class="w-full text-[11px] text-gray-300 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:bg-fest-accent file:text-white file:text-[11px] file:font-bold">
-                <p class="text-[10px] text-gray-500 mt-1">Pick from your camera roll, or take one now.</p>
+                <p class="text-[10px] text-gray-500 mt-1">From your camera roll, or shoot one now. Clips up to 25 MB.</p>
             </div>
 
             <div>

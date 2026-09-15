@@ -163,7 +163,22 @@
 
     function openLightbox(card) {
         state.photo = card.dataset;
-        $("#lb-image").src = card.dataset.image;
+        const img = $("#lb-image");
+        const video = $("#lb-video");
+        const isVideo = card.dataset.kind === "video";
+
+        // Swap the player in for clips, and stop whatever was playing before.
+        video.pause();
+        img.classList.toggle("hidden", isVideo);
+        video.classList.toggle("hidden", !isVideo);
+        if (isVideo) {
+            video.src = card.dataset.media;
+            video.play().catch(() => {});
+        } else {
+            video.removeAttribute("src");
+            img.src = card.dataset.media;
+        }
+
         $("#lb-caption").textContent = card.dataset.title;
         $("#lb-author").textContent = "Uploaded by " + card.dataset.author;
         $("#lb-likes").textContent = card.dataset.likes;
@@ -186,6 +201,9 @@
     });
 
     $("#lb-close").addEventListener("click", () => {
+        const video = $("#lb-video");
+        video.pause();
+        video.removeAttribute("src");
         lightbox.classList.add("hidden");
         lightbox.classList.remove("flex");
     });

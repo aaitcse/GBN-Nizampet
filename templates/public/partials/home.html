@@ -48,7 +48,7 @@
     </button>
     <button type="button" data-goto-tab="gallery" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
         <div class="text-xl font-black text-fest-accent leading-none">{{ home_stats.photos }}</div>
-        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Photos</div>
+        <div class="text-[9px] uppercase font-bold text-gray-400 mt-1 tracking-wider">Gallery</div>
     </button>
     <button type="button" data-goto-tab="polls" class="glass-panel p-3 rounded-2xl text-center active:scale-95 transition">
         <div class="text-xl font-black text-fest-gold leading-none">{{ home_stats.polls }}</div>
@@ -95,7 +95,11 @@
     <div class="grid grid-cols-3 gap-2">
         {% for photo in home_photos %}
         <button type="button" data-goto-tab="gallery" class="relative aspect-square rounded-xl overflow-hidden border border-white/10 active:scale-95 transition">
+            {% if photo.is_video %}
+            <video src="{{ photo.media_url }}" class="w-full h-full object-cover" muted playsinline preload="metadata"></video>
+            {% else %}
             <img src="{{ photo.display_image }}" alt="{{ photo.title }}" class="w-full h-full object-cover">
+            {% endif %}
             <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 text-[9px] font-bold text-fest-accent text-right">
                 <i class="fa-solid fa-heart"></i> {{ photo.likes }}
             </span>
@@ -108,7 +112,7 @@
 
     <button type="button" data-goto-tab="gallery"
             class="w-full py-2.5 rounded-xl bg-gradient-to-r from-fest-accent to-fest-purple text-white font-extrabold text-[11px] shadow-lg active:scale-95 transition">
-        <i class="fa-solid fa-camera mr-1.5"></i>SHARE YOUR SHOT
+        <i class="fa-solid fa-camera mr-1.5"></i>SHARE YOUR PHOTO OR CLIP
     </button>
 </section>
 
