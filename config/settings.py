@@ -160,6 +160,10 @@ FEST_TAGLINE = os.environ.get("FEST_TAGLINE", "Festival Companion")
 # Shown on the home screen. Dates are display-only; the schedule itself is
 # organised by Day 1 / Day 2 / Day 3 in the console.
 FEST_EVENT_NAME = os.environ.get("FEST_EVENT_NAME", "Ganesh Utsav")
+# Banner behind the home screen hero, as a path inside static/. Bundled with
+# the code so it survives deploys; set to "" to fall back to the newest
+# approved gallery photo instead.
+FEST_HERO_IMAGE = os.environ.get("FEST_HERO_IMAGE", "img/hero.jpg")
 FEST_VENUE = os.environ.get("FEST_VENUE", "GBN Campus, Nizampet")
 FEST_DATES = os.environ.get("FEST_DATES", "14 - 20 September 2026")
 # The schedule builds its Day 1..Day N tabs from this range.

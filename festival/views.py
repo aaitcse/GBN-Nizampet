@@ -13,6 +13,7 @@ from django.db.models import Avg, Count, F, Q, Sum, Value
 from django.db.models.functions import Greatest
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -184,6 +185,22 @@ def countdown_label():
     return "That is a wrap. See you next year!"
 
 
+def hero_image_url():
+    """URL of the bundled banner, or "" when none is set or it is missing.
+
+    Resolving it here rather than in the template means a bad path logs a
+    warning and falls back, instead of 500ing on the manifest lookup.
+    """
+    name = getattr(settings, "FEST_HERO_IMAGE", "")
+    if not name:
+        return ""
+    try:
+        return static(name)
+    except ValueError:
+        logger.warning("FEST_HERO_IMAGE %r is not in the static files; ignoring it.", name)
+        return ""
+
+
 def home_context(request):
     """Everything the landing tab shows: hero, teasers and festival facts."""
     photos = list(Photo.objects.filter(is_approved=True)[:7])
@@ -191,6 +208,7 @@ def home_context(request):
     poll = Poll.objects.filter(is_active=True).prefetch_related("options").first()
 
     return {
+        "hero_image": hero_image_url(),
         "hero_photo": photos[0] if photos else None,
         "home_photos": photos[1:7],
         "home_events": upcoming,

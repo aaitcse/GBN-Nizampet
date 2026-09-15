@@ -1,14 +1,17 @@
+{% load static %}
 {# Landing tab: hero, teasers and the practical stuff, all tapping through to the other tabs. #}
 
 <!-- HERO -->
 <div class="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-    {% if hero_photo %}
+    {% if hero_image %}
+    <img src="{{ hero_image }}" alt="{{ fest_event_name|default:brand_full }}" class="w-full h-80 object-cover hero-crop">
+    {% elif hero_photo %}
     <img src="{{ hero_photo.display_image }}" alt="{{ hero_photo.title }}" class="w-full h-60 object-cover">
     {% else %}
     <div class="w-full h-60 bg-gradient-to-br from-fest-purple via-fest-accent to-fest-cyan"></div>
     {% endif %}
 
-    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/10"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent"></div>
 
     <div class="absolute inset-x-0 bottom-0 p-4 space-y-2.5">
         {% if fest_countdown %}

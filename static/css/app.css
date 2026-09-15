@@ -81,3 +81,9 @@ select {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* The home banner is a portrait photo shown in a landscape frame. Bias the
+   crop upward so the subject stays in view instead of the floor. */
+.hero-crop {
+    object-position: center 26%;
+}
