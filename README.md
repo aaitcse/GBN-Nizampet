@@ -154,6 +154,9 @@ Read from the environment (all optional in development):
 | `FEST_AUTO_APPROVE_PHOTOS` | `0` | Skip gallery moderation. |
 | `FEST_MAX_IMAGE_MB` | `10` | Largest photo an attendee may upload. |
 | `FEST_MAX_VIDEO_MB` | `25` | Largest clip an attendee may upload. |
+| `FEST_INSTAGRAM_URL` | blank | Instagram page; the Follow us tile appears once set. |
+| `FEST_WHATSAPP_GROUP_URL` | blank | WhatsApp group invite; the Join the group tile appears once set. |
+| `FEST_HELP_WHATSAPP` | blank | Committee number with country code (919876543210) for the Need help button. |
 | `FEST_TSHIRT_OPEN` | `1` | Set to `0` to close t-shirt orders. |
 | `FEST_TSHIRT_PRICE` | `200` | Price per shirt, in rupees. |
 | `FEST_TSHIRT_OCCASION` | `Nimajjanam Day` | Label above the t-shirt pitch. |

@@ -69,22 +69,20 @@ KNOW_BEFORE = [
     {
         "icon": "fa-utensils",
         "colour": "fest-accent",
-        "title": "Prasadam",
-        "body": "Counters open through the day at the Food Village. Annadanam on Day 5.",
-    },
-    {
-        "icon": "fa-id-card",
-        "colour": "fest-cyan",
-        "title": "Entry & ID",
-        "body": "Carry your college ID. Footwear stands are next to both pandal gates.",
-    },
-    {
-        "icon": "fa-kit-medical",
-        "colour": "fest-green",
-        "title": "Need help?",
-        "body": "Volunteers in pink jackets, and a medical point beside the Main Pandal.",
+        "title": "Pooja",
+        "body": (
+            "Prasadam will be served in front of the mandapam, followed by pooja. "
+            "Tentative time: 8:00 PM onwards."
+        ),
     },
 ]
+
+HELP_CARD = {
+    "icon": "fa-circle-question",
+    "colour": "fest-green",
+    "title": "Need help?",
+    "body": "For quick help, please reach out to our committee members or volunteers.",
+}
 
 
 # --------------------------------------------------------------------------- #
@@ -238,6 +236,12 @@ def home_context(request):
         "fest_countdown": countdown_label(),
         "vibe_chips": VIBE_CHIPS,
         "know_before": KNOW_BEFORE,
+        "help_card": HELP_CARD,
+        "help_whatsapp": (
+            f"https://wa.me/{settings.FEST_HELP_WHATSAPP}" if settings.FEST_HELP_WHATSAPP else ""
+        ),
+        "instagram_url": settings.FEST_INSTAGRAM_URL,
+        "whatsapp_group_url": settings.FEST_WHATSAPP_GROUP_URL,
     }
 
 

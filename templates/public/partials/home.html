@@ -156,7 +156,52 @@
         </div>
         {% endfor %}
     </div>
+
+    <div class="glass-panel p-3.5 rounded-2xl space-y-2">
+        <div class="flex items-start gap-2.5">
+            <i class="fa-solid {{ help_card.icon }} text-{{ help_card.colour }} text-sm mt-0.5"></i>
+            <div class="flex-1 min-w-0">
+                <h4 class="text-[11px] font-bold text-white">{{ help_card.title }}</h4>
+                <p class="text-[10px] text-gray-400 leading-relaxed mt-0.5">{{ help_card.body }}</p>
+            </div>
+        </div>
+        {% if help_whatsapp %}
+        <a href="{{ help_whatsapp }}" target="_blank" rel="noopener"
+           class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366]/15 border border-[#25D366]/40 text-[#25D366] font-bold text-[11px] active:scale-95 transition">
+            <i class="fa-brands fa-whatsapp text-sm"></i>Message the committee
+        </a>
+        {% endif %}
+    </div>
 </section>
+
+{% if instagram_url or whatsapp_group_url %}
+<!-- STAY CONNECTED -->
+<section class="space-y-2.5">
+    <h3 class="text-sm font-extrabold text-white">Stay connected</h3>
+    <div class="grid {% if instagram_url and whatsapp_group_url %}grid-cols-2{% else %}grid-cols-1{% endif %} gap-2.5">
+        {% if whatsapp_group_url %}
+        <a href="{{ whatsapp_group_url }}" target="_blank" rel="noopener"
+           class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#25D366]/15 border border-[#25D366]/40 active:scale-95 transition">
+            <i class="fa-brands fa-whatsapp text-xl text-[#25D366]"></i>
+            <span class="min-w-0">
+                <span class="block text-[11px] font-bold text-white leading-tight">Join the group</span>
+                <span class="block text-[10px] text-gray-400">Announcements &amp; updates</span>
+            </span>
+        </a>
+        {% endif %}
+        {% if instagram_url %}
+        <a href="{{ instagram_url }}" target="_blank" rel="noopener"
+           class="flex items-center gap-2.5 p-3 rounded-2xl bg-gradient-to-br from-fest-accent/20 to-fest-purple/20 border border-fest-accent/40 active:scale-95 transition">
+            <i class="fa-brands fa-instagram text-xl text-fest-accent"></i>
+            <span class="min-w-0">
+                <span class="block text-[11px] font-bold text-white leading-tight">Follow us</span>
+                <span class="block text-[10px] text-gray-400">Photos &amp; reels</span>
+            </span>
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
 
 <!-- FEEDBACK NUDGE -->
 <button type="button" data-goto-tab="feedback"

@@ -174,6 +174,12 @@ FEST_DATES = os.environ.get("FEST_DATES", "14 - 20 September 2026")
 # The schedule builds its Day 1..Day N tabs from this range.
 FEST_START_DATE = os.environ.get("FEST_START_DATE", "2026-09-14")
 FEST_END_DATE = os.environ.get("FEST_END_DATE", "2026-09-20")
+# Where the community gathers online. Blank means the link is not shown.
+FEST_INSTAGRAM_URL = os.environ.get("FEST_INSTAGRAM_URL", "")
+FEST_WHATSAPP_GROUP_URL = os.environ.get("FEST_WHATSAPP_GROUP_URL", "")
+# Committee number for the Need help card, digits with country code: 919876543210
+FEST_HELP_WHATSAPP = os.environ.get("FEST_HELP_WHATSAPP", "")
+
 # Festival t-shirts for the final day. Set FEST_TSHIRT_OPEN=0 to close orders
 # once the count has gone to the printer.
 FEST_TSHIRT_OPEN = os.environ.get("FEST_TSHIRT_OPEN", "1") == "1"
