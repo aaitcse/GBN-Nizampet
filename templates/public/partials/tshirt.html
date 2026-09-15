@@ -1,18 +1,16 @@
 {# Festival t-shirt reservation for the final day. #}
 
-<div class="relative rounded-3xl overflow-hidden border border-white/10 p-4 bg-gradient-to-br from-fest-accent/30 via-fest-purple/20 to-fest-cyan/20">
-    <span class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-fest-gold">{{ tshirt_occasion }}</span>
-    <h2 class="text-xl font-extrabold text-white mt-1 leading-tight">One last day.<br>Let us walk it together.</h2>
-    <p class="text-[11px] text-gray-200 mt-2 leading-relaxed">
-        Dhol in front, the whole community behind, every one of us in the same colour. Reserve your
-        festival t-shirt for the final procession and be in the photo we look back at all year.
+<div class="relative rounded-3xl overflow-hidden border border-white/10 p-5 bg-gradient-to-br from-fest-accent/30 via-fest-purple/20 to-fest-cyan/20">
+    <h2 class="text-xl font-extrabold text-white leading-tight">One last day.<br>Let&rsquo;s walk together.</h2>
+    <p class="text-xs text-gray-200 mt-3 leading-relaxed">
+        Dhol in front, our whole community behind, and everyone in the same colour.
     </p>
-    <div class="flex flex-wrap items-center gap-2 mt-3">
-        <span class="px-2.5 py-1 rounded-full bg-black/40 border border-white/20 text-[11px] font-black text-white">
-            &#8377;{{ tshirt_price }} each
-        </span>
-        <span class="text-[10px] text-gray-300">{{ tshirt_note }}</span>
-    </div>
+    <p class="text-xs text-white font-bold mt-2.5 leading-relaxed">
+        Reserve your festival T-shirt and join us for the final procession!
+    </p>
+    <span class="inline-block mt-4 px-3 py-1.5 rounded-full bg-black/40 border border-white/20 text-xs font-black text-white">
+        &#8377;{{ tshirt_price }} each
+    </span>
 </div>
 
 {% include "public/partials/tshirt_summary.html" %}
