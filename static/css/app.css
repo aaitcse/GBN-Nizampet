@@ -1,0 +1,83 @@
+/* Shared festival styling: dark glass surfaces on a near-black ground. */
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: #030407;
+    color: #F3F4F6;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+button,
+nav,
+.no-select {
+    user-select: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.glass-panel {
+    background: rgba(20, 23, 36, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-nav {
+    background: rgba(10, 12, 20, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.safe-pb {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+/* Phone frame used by the attendee app */
+.phone-shell {
+    overflow: hidden;
+}
+
+/* Dark form controls, since the browser default select/option is light */
+select option {
+    background-color: #1F2436;
+    color: #F3F4F6;
+}
+
+input[type="text"],
+input[type="url"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+    color-scheme: dark;
+}
+
+.toast {
+    animation: toastIn 0.25s ease-out;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

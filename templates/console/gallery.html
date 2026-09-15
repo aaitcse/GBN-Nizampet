@@ -1,0 +1,83 @@
+{% extends "console/base.html" %}
+
+{% block console %}
+<div class="flex items-center justify-between gap-3">
+    <div>
+        <h2 class="text-lg font-extrabold text-white">Photo approvals &amp; gallery</h2>
+        <p class="text-[11px] text-gray-400">Attendee uploads stay hidden until you approve them.</p>
+    </div>
+    {% if pending_count %}
+    <span class="px-2.5 py-1 rounded-full bg-fest-gold/20 border border-fest-gold/40 text-fest-gold text-[11px] font-bold">
+        {{ pending_count }} pending
+    </span>
+    {% endif %}
+</div>
+
+<div class="flex gap-2">
+    <a href="?status=all" class="px-3 py-1.5 rounded-full text-[11px] font-bold {% if status == 'all' %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">All</a>
+    <a href="?status=pending" class="px-3 py-1.5 rounded-full text-[11px] font-bold {% if status == 'pending' %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">Pending</a>
+    <a href="?status=approved" class="px-3 py-1.5 rounded-full text-[11px] font-bold {% if status == 'approved' %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">Approved</a>
+</div>
+
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    {% for photo in photos %}
+    <article class="glass-panel rounded-2xl overflow-hidden">
+        <div class="relative">
+            <img src="{{ photo.display_image }}" alt="{{ photo.title }}" class="w-full h-40 object-cover">
+            <span class="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded-full {% if photo.is_approved %}bg-emerald-500/80 text-white{% else %}bg-fest-gold/90 text-black{% endif %}">
+                {% if photo.is_approved %}LIVE{% else %}PENDING{% endif %}
+            </span>
+            <span class="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-fest-cyan uppercase">{{ photo.get_category_display }}</span>
+        </div>
+        <div class="p-3 space-y-2">
+            <div>
+                <h4 class="text-sm font-bold text-white truncate">{{ photo.title }}</h4>
+                <p class="text-[11px] text-gray-400">by {{ photo.author }} &middot; {{ photo.created_at|date:"d M, H:i" }}</p>
+                <p class="text-[11px] text-fest-accent font-bold mt-0.5"><i class="fa-solid fa-heart mr-1"></i>{{ photo.likes }} likes</p>
+            </div>
+            <div class="flex gap-1.5">
+                {% if photo.is_approved %}
+                <form method="post" action="{% url 'festival:console_photo_action' photo.id 'hide' %}" class="flex-1">
+                    {% csrf_token %}
+                    <button class="w-full py-1.5 rounded-lg bg-white/10 text-[11px] font-bold text-gray-200 hover:text-white">Hide</button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'festival:console_photo_action' photo.id 'approve' %}" class="flex-1">
+                    {% csrf_token %}
+                    <button class="w-full py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-[11px] font-bold text-emerald-300">Approve</button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'festival:console_photo_action' photo.id 'delete' %}"
+                      onsubmit="return confirm('Delete this photo permanently?');">
+                    {% csrf_token %}
+                    <button class="px-3 py-1.5 rounded-lg bg-rose-500/15 text-[11px] font-bold text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+    </article>
+    {% empty %}
+    <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-500 sm:col-span-2 lg:col-span-3">
+        Nothing to show for this filter.
+    </div>
+    {% endfor %}
+</div>
+
+<section class="glass-panel p-5 rounded-3xl space-y-4 max-w-2xl">
+    <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-cloud-arrow-up text-fest-cyan mr-1.5"></i>Add an official photo</h3>
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        <div class="grid sm:grid-cols-2 gap-4">
+            {% for field in form %}
+            <div class="space-y-1">
+                <label for="{{ field.id_for_label }}" class="block text-xs font-bold text-gray-300">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="text-[11px] text-rose-400 font-bold">{{ error }}</p>{% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-fest-accent text-white font-extrabold text-xs active:scale-95 transition">
+            ADD TO GALLERY
+        </button>
+    </form>
+</section>
+{% endblock %}

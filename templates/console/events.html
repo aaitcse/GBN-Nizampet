@@ -1,0 +1,62 @@
+{% extends "console/base.html" %}
+
+{% block console %}
+<div class="flex items-center justify-between gap-3">
+    <div>
+        <h2 class="text-lg font-extrabold text-white">Event details manager</h2>
+        <p class="text-[11px] text-gray-400">Programme for all three festival days.</p>
+    </div>
+    <a href="{% url 'festival:console_event_create' %}"
+       class="px-3 py-2 rounded-xl bg-fest-accent text-white text-xs font-bold active:scale-95 transition">
+        <i class="fa-solid fa-plus mr-1"></i>Add event
+    </a>
+</div>
+
+<div class="flex gap-2 overflow-x-auto hide-scrollbar">
+    <a href="{% url 'festival:console_events' %}"
+       class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap {% if not selected_day %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">All days</a>
+    {% for value, label in day_choices %}
+    <a href="?day={{ value }}"
+       class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap {% if selected_day == value %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="space-y-2">
+    {% for event in events %}
+    <article class="glass-panel p-3 rounded-2xl flex items-center gap-3">
+        <img src="{{ event.display_image }}" alt="{{ event.title }}" class="w-14 h-14 rounded-xl object-cover shrink-0">
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-fest-cyan uppercase">{{ event.category }}</span>
+                <span class="text-[10px] text-gray-400">{{ event.day }} &middot; {{ event.time_slot }}</span>
+                {% if not event.is_published %}
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-gray-500/20 text-gray-300 uppercase">Draft</span>
+                {% endif %}
+            </div>
+            <h4 class="text-sm font-bold text-white truncate mt-0.5">{{ event.title }}</h4>
+            <p class="text-[11px] text-gray-400">
+                <i class="fa-solid fa-location-dot text-fest-accent mr-1"></i>{{ event.location }}
+                <span class="ml-2"><i class="fa-solid fa-bookmark text-fest-accent mr-1"></i>{{ event.saves }} saved</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+            <a href="{% url 'festival:console_event_edit' event.id %}"
+               class="px-2.5 py-1.5 rounded-lg bg-white/10 text-xs font-bold text-gray-200 hover:text-white">
+                <i class="fa-solid fa-pen"></i>
+            </a>
+            <form method="post" action="{% url 'festival:console_event_delete' event.id %}"
+                  onsubmit="return confirm('Delete this event permanently?');">
+                {% csrf_token %}
+                <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-rose-500/15 text-xs font-bold text-rose-300 hover:text-rose-200">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </form>
+        </div>
+    </article>
+    {% empty %}
+    <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-500">
+        No events here yet. Use <span class="text-fest-accent font-bold">Add event</span> to create the first one.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

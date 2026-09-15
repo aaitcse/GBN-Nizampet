@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ brand_full }} - {{ brand_tagline }}{% endblock %}
+{% block body_class %}flex justify-center items-center h-screen bg-black phone-shell{% endblock %}
+
+{% block body %}
+<div id="app-container"
+     class="w-full max-w-md h-full sm:h-[94vh] sm:rounded-[40px] bg-fest-bg relative flex flex-col overflow-hidden shadow-2xl border border-white/10"
+     data-config='{"events": "{% url "festival:events_partial" %}", "gallery": "{% url "festival:gallery_partial" %}", "polls": "{% url "festival:polls_partial" %}", "upload": "{% url "festival:upload_photo" %}", "feedback": "{% url "festival:submit_feedback" %}"}'>
+
+    <form id="csrf-form" class="hidden">{% csrf_token %}</form>
+
+    <!-- Header -->
+    <header class="px-5 pt-4 pb-3 flex justify-between items-center z-20 glass-panel border-b-0">
+        <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-fest-accent via-fest-purple to-fest-cyan flex items-center justify-center shadow-lg animate-pulse-glow">
+                <i class="fa-solid fa-bolt text-xs text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-base tracking-wider bg-gradient-to-r from-white via-slate-200 to-fest-cyan bg-clip-text text-transparent leading-none">
+                    {{ brand_full|upper }}
+                </h1>
+                <span class="text-[9px] tracking-widest text-fest-accent uppercase font-bold">Public App</span>
+            </div>
+        </div>
+
+        <a href="{% url 'festival:console_overview' %}"
+           class="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-bold text-gray-200 hover:text-white flex items-center space-x-1.5 active:scale-95 transition">
+            <i class="fa-solid fa-user-shield text-fest-cyan text-xs"></i>
+            <span>Admin Console</span>
+        </a>
+    </header>
+
+    <!-- Toast area -->
+    <div id="toast-area" class="absolute top-16 inset-x-0 z-40 px-4 space-y-2 pointer-events-none">
+        {% for message in messages %}
+        <div class="toast glass-panel px-4 py-2.5 rounded-2xl text-xs font-bold border border-white/20 text-white">{{ message }}</div>
+        {% endfor %}
+    </div>
+
+    <main class="flex-1 overflow-y-auto hide-scrollbar relative pb-24">
+
+        <!-- TAB 1: DAILY EVENTS -->
+        <section id="tab-events" class="tab-content p-4 space-y-4 {% if active_tab != 'events' %}hidden{% endif %}">
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-white">Daily Events</h2>
+                        <p class="text-[11px] text-gray-400">Discover stages, times &amp; performances</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full bg-fest-accent/20 border border-fest-accent/40 text-fest-accent text-[11px] font-bold">
+                        <i class="fa-solid fa-bookmark mr-1"></i><span id="agenda-count">{{ agenda_count }}</span> Saved
+                    </span>
+                </div>
+
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                    <input type="search" id="event-search" value="{{ search_query }}"
+                           placeholder="Search artist, stage, or category..."
+                           class="w-full bg-fest-card border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+                </div>
+
+                <div class="flex space-x-2 overflow-x-auto hide-scrollbar py-1">
+                    {% for value, label in day_choices %}
+                    <button type="button" data-day="{{ value }}"
+                            class="day-btn px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap {% if selected_day == value %}bg-fest-accent text-white shadow-md{% else %}bg-white/5 border border-white/10 text-gray-400 hover:text-white{% endif %}">
+                        {{ label }}
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <div class="flex space-x-2">
+                    <button type="button" data-saved="0"
+                            class="saved-btn px-3 py-1 rounded-lg text-[11px] font-bold {% if saved_only %}bg-white/5 text-gray-400 border border-white/10{% else %}bg-white/20 text-white{% endif %}">All Events</button>
+                    <button type="button" data-saved="1"
+                            class="saved-btn px-3 py-1 rounded-lg text-[11px] font-bold {% if saved_only %}bg-white/20 text-white{% else %}bg-white/5 text-gray-400 border border-white/10{% endif %}">My Bookmarked Agenda</button>
+                </div>
+            </div>
+
+            <div id="events-list-container" class="space-y-3 pt-1">
+                {% include "public/partials/events_list.html" %}
+            </div>
+        </section>
+
+        <!-- TAB 2: PHOTO GALLERY -->
+        <section id="tab-gallery" class="tab-content p-4 space-y-4 {% if active_tab != 'gallery' %}hidden{% endif %}">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white">Event Photos</h2>
+                    <p class="text-[11px] text-gray-400">Festival highlights &amp; attendee captures</p>
+                </div>
+                <button type="button" id="open-upload"
+                        class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-fest-accent to-fest-purple text-white font-bold text-xs shadow-md active:scale-95 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-camera"></i><span>Upload Photo</span>
+                </button>
+            </div>
+
+            <div class="flex space-x-2 overflow-x-auto hide-scrollbar py-1">
+                {% for value, label in gallery_categories %}
+                <button type="button" data-category="{{ value }}"
+                        class="gal-cat-btn px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap {% if selected_category == value %}bg-fest-cyan text-black{% else %}bg-white/10 border border-white/10 text-gray-300{% endif %}">
+                    {{ label }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <div id="gallery-grid-container" class="grid grid-cols-2 gap-3">
+                {% include "public/partials/gallery_grid.html" %}
+            </div>
+        </section>
+
+        <!-- TAB 3: LIVE POLLS -->
+        <section id="tab-polls" class="tab-content p-4 space-y-4 {% if active_tab != 'polls' %}hidden{% endif %}">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white">Live Festival Polls</h2>
+                    <p class="text-[11px] text-gray-400">Vote once per poll &amp; see crowd favourites</p>
+                </div>
+                <button type="button" id="refresh-polls" class="text-gray-400 hover:text-fest-cyan p-1.5 text-sm" title="Refresh results">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
+
+            <div id="polls-container" class="space-y-4">
+                {% include "public/partials/polls_list.html" %}
+            </div>
+        </section>
+
+        <!-- TAB 4: FEEDBACK -->
+        <section id="tab-feedback" class="tab-content p-4 space-y-4 {% if active_tab != 'feedback' %}hidden{% endif %}">
+            <div>
+                <h2 class="text-xl font-extrabold text-white">Feedback &amp; Suggestions</h2>
+                <p class="text-[11px] text-gray-400">Help us make your festival experience better</p>
+            </div>
+
+            <form id="feedback-form" method="post" action="{% url 'festival:submit_feedback' %}"
+                  class="glass-panel p-4 rounded-3xl space-y-4 border border-white/10">
+                {% csrf_token %}
+                <input type="hidden" name="rating" id="fb-rating" value="5">
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">Rating</label>
+                    <div id="star-row" class="flex space-x-3 justify-center py-2 bg-white/5 rounded-2xl border border-white/10">
+                        {% for star in "12345" %}
+                        <button type="button" data-star="{{ forloop.counter }}"
+                                class="star-btn text-2xl text-fest-gold hover:text-fest-gold transition"><i class="fa-solid fa-star"></i></button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="fb-category" class="block text-xs font-bold text-gray-300 mb-1">Feedback Category</label>
+                    <select name="category" id="fb-category"
+                            class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-fest-accent">
+                        {% for value, label in feedback_categories %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="fb-comment" class="block text-xs font-bold text-gray-300 mb-1">Your Comments / Suggestions</label>
+                    <textarea name="comment" id="fb-comment" required rows="3" placeholder="Share details or ideas..."
+                              class="w-full bg-fest-card border border-white/10 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent"></textarea>
+                </div>
+
+                <div>
+                    <label for="fb-contact" class="block text-xs font-bold text-gray-300 mb-1">Email or Phone (Optional)</label>
+                    <input type="text" name="contact" id="fb-contact" placeholder="For follow-up updates"
+                           class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
+                </div>
+
+                <button type="submit"
+                        class="w-full py-3 rounded-xl bg-gradient-to-r from-fest-accent via-fest-purple to-fest-cyan text-white font-extrabold text-xs shadow-lg active:scale-95 transition">
+                    SUBMIT FEEDBACK
+                </button>
+            </form>
+
+            <div id="feedback-success" class="hidden glass-panel p-4 rounded-2xl border border-emerald-500/40 text-center space-y-2 fade-in">
+                <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-lg">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h4 class="text-sm font-bold text-white">Thank you for your feedback!</h4>
+                <p class="text-xs text-gray-300">Your suggestion is now in the organiser inbox.</p>
+                <button type="button" id="feedback-again" class="text-[11px] font-bold text-fest-cyan underline">Send another</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom navigation -->
+    <nav class="absolute bottom-0 inset-x-0 glass-nav z-30 px-2 py-2 safe-pb">
+        <div class="flex justify-around items-center">
+            <button type="button" data-tab="events" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'events' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="fa-solid fa-calendar-days text-base"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">Events</span>
+            </button>
+            <button type="button" data-tab="gallery" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'gallery' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="fa-solid fa-images text-base"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">Photos</span>
+            </button>
+            <button type="button" data-tab="polls" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'polls' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="fa-solid fa-chart-simple text-base"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">Polls</span>
+            </button>
+            <button type="button" data-tab="feedback" class="nav-btn flex flex-col items-center py-1 px-2.5 transition {% if active_tab == 'feedback' %}text-fest-accent{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="fa-solid fa-comment-dots text-base"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">Feedback</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="absolute inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex-col justify-between p-4">
+        <div class="flex justify-between items-center z-10">
+            <span id="lb-caption" class="text-xs font-bold text-white truncate max-w-[220px]">Photo Preview</span>
+            <button type="button" id="lb-close" class="text-gray-300 hover:text-white p-2 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex-1 flex items-center justify-center py-4">
+            <img id="lb-image" src="" alt="" class="max-h-full max-w-full rounded-2xl object-contain shadow-2xl">
+        </div>
+        <div class="flex justify-between items-center text-xs text-gray-400 px-2">
+            <span id="lb-author">By Festival Fan</span>
+            <button type="button" id="lb-like"
+                    class="px-3 py-1.5 rounded-full bg-fest-accent/20 border border-fest-accent/40 text-fest-accent font-bold active:scale-90 transition">
+                <i class="fa-solid fa-heart mr-1"></i><span id="lb-likes">0</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Upload modal -->
+    <div id="upload-modal" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+        <form id="upload-form" method="post" action="{% url 'festival:upload_photo' %}" enctype="multipart/form-data"
+              class="bg-fest-card border border-white/20 rounded-3xl p-5 space-y-4 w-full max-w-xs shadow-2xl max-h-[85vh] overflow-y-auto hide-scrollbar">
+            {% csrf_token %}
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-extrabold text-white">Submit Festival Photo</h3>
+                <button type="button" id="upload-close" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">Photo Title</label>
+                <input type="text" name="title" required placeholder="e.g. Neon Light Stage"
+                       class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">Your Name</label>
+                <input type="text" name="author" placeholder="Festival Fan"
+                       class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">Pick From Device</label>
+                <input type="file" name="image" accept="image/*"
+                       class="w-full text-[11px] text-gray-300 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:bg-fest-accent file:text-white file:text-[11px] file:font-bold">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">...or paste an Image URL</label>
+                <input type="url" name="image_url" id="up-url" placeholder="https://..."
+                       class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2 text-xs text-white mb-2">
+                <div class="flex space-x-1.5">
+                    <button type="button" class="preset-btn px-2 py-1 bg-white/10 rounded text-[10px] text-gray-300"
+                            data-url="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&amp;fit=crop&amp;w=800&amp;q=80">Preset 1</button>
+                    <button type="button" class="preset-btn px-2 py-1 bg-white/10 rounded text-[10px] text-gray-300"
+                            data-url="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&amp;fit=crop&amp;w=800&amp;q=80">Preset 2</button>
+                    <button type="button" class="preset-btn px-2 py-1 bg-white/10 rounded text-[10px] text-gray-300"
+                            data-url="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&amp;fit=crop&amp;w=800&amp;q=80">Preset 3</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">Category</label>
+                <select name="category" class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2 text-xs text-white">
+                    {% for value, label in photo_categories %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <p id="upload-error" class="hidden text-[11px] text-rose-400 font-bold"></p>
+
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-fest-accent text-white font-bold text-xs shadow-lg active:scale-95 transition">
+                UPLOAD FOR REVIEW
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

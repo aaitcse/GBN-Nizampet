@@ -1,0 +1,39 @@
+<div class="js-poll glass-panel p-4 rounded-3xl space-y-3 border border-white/10" data-poll-id="{{ poll.id }}">
+    <div class="flex justify-between items-start space-x-2">
+        <h4 class="text-sm font-bold text-white leading-snug">{{ poll.question }}</h4>
+        <span class="shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-fest-green/20 text-fest-green border border-fest-green/40">Live</span>
+    </div>
+
+    {% if poll.has_voted %}
+    <div class="space-y-2.5">
+        {% for option in poll.decorated_options %}
+        <div class="space-y-1">
+            <div class="flex justify-between items-center text-[11px]">
+                <span class="font-bold {% if option.is_choice %}text-fest-accent{% else %}text-gray-200{% endif %}">
+                    {% if option.is_choice %}<i class="fa-solid fa-circle-check mr-1"></i>{% endif %}{{ option.text }}
+                </span>
+                <span class="text-gray-400 font-bold">{{ option.pct }}% &middot; {{ option.votes }}</span>
+            </div>
+            <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+                <div class="h-full rounded-full {% if option.is_choice %}bg-gradient-to-r from-fest-accent to-fest-purple{% else %}bg-white/25{% endif %}"
+                     style="width: {{ option.pct }}%"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="text-[10px] text-gray-500 pt-1">
+        <i class="fa-solid fa-users mr-1"></i>{{ poll.total }} vote{{ poll.total|pluralize }} so far &middot; you already voted
+    </p>
+    {% else %}
+    <form method="post" action="{% url 'festival:cast_vote' poll.id %}" class="js-vote-form space-y-2">
+        {% csrf_token %}
+        {% for option in poll.decorated_options %}
+        <button type="submit" name="option" value="{{ option.id }}"
+                class="w-full text-left px-3.5 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-gray-200 hover:border-fest-accent hover:text-white active:scale-[0.98] transition">
+            {{ option.text }}
+        </button>
+        {% endfor %}
+    </form>
+    <p class="text-[10px] text-gray-500"><i class="fa-solid fa-users mr-1"></i>{{ poll.total }} vote{{ poll.total|pluralize }} cast - tap an option to see results</p>
+    {% endif %}
+</div>

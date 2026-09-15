@@ -1,0 +1,8 @@
+{% for poll in polls %}
+    {% include "public/partials/poll_card.html" %}
+{% empty %}
+<div class="text-center py-10 text-gray-500 text-xs space-y-2">
+    <i class="fa-solid fa-chart-simple text-2xl block"></i>
+    <p>No active festival polls right now. Check back after the next set!</p>
+</div>
+{% endfor %}

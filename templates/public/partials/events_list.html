@@ -1,0 +1,30 @@
+{% for event in events %}
+<article class="glass-panel p-3 rounded-2xl flex items-center justify-between space-x-3 border border-white/10 hover:border-white/20 transition">
+    <img src="{{ event.display_image }}" alt="{{ event.title }}" class="w-16 h-16 rounded-xl object-cover shrink-0">
+    <div class="flex-1 overflow-hidden">
+        <div class="flex items-center space-x-1.5 mb-1">
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-fest-cyan uppercase">{{ event.category }}</span>
+            <span class="text-[10px] text-gray-400 font-medium">{{ event.time_slot }}</span>
+        </div>
+        <h4 class="text-xs font-bold text-white truncate">{{ event.title }}</h4>
+        <p class="text-[11px] text-gray-400 flex items-center mt-0.5">
+            <i class="fa-solid fa-location-dot text-[10px] mr-1 text-fest-accent"></i>{{ event.location }}
+        </p>
+        {% if event.description %}
+        <p class="text-[10px] text-gray-500 mt-1 line-clamp-2">{{ event.description }}</p>
+        {% endif %}
+    </div>
+    <form method="post" action="{% url 'festival:toggle_bookmark' event.id %}" class="js-bookmark shrink-0">
+        {% csrf_token %}
+        <button type="submit" title="Save to my agenda"
+                class="p-2 text-base transition active:scale-90 {% if event.is_bookmarked %}text-fest-accent{% else %}text-gray-500 hover:text-white{% endif %}">
+            <i class="fa-{% if event.is_bookmarked %}solid{% else %}regular{% endif %} fa-bookmark"></i>
+        </button>
+    </form>
+</article>
+{% empty %}
+<div class="text-center py-10 text-gray-500 text-xs space-y-2">
+    <i class="fa-regular fa-calendar-xmark text-2xl block"></i>
+    <p>{% if saved_only %}Nothing bookmarked for {{ selected_day }} yet.{% else %}No events match this filter.{% endif %}</p>
+</div>
+{% endfor %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ brand }} Console - Sign in{% endblock %}
+{% block body_class %}bg-fest-bg text-fest-text min-h-screen flex items-center justify-center p-4{% endblock %}
+
+{% block body %}
+<div class="w-full max-w-sm space-y-5">
+    <div class="text-center space-y-2">
+        <div class="w-12 h-12 mx-auto rounded-full bg-gradient-to-tr from-fest-accent via-fest-purple to-fest-cyan flex items-center justify-center shadow-lg animate-pulse-glow">
+            <i class="fa-solid fa-user-shield text-white"></i>
+        </div>
+        <h1 class="font-extrabold text-lg tracking-wider bg-gradient-to-r from-white via-slate-200 to-fest-cyan bg-clip-text text-transparent">
+            {{ brand_full|upper }}
+        </h1>
+        <p class="text-[11px] tracking-widest text-fest-accent uppercase font-bold">Organiser sign in</p>
+    </div>
+
+    <form method="post" class="glass-panel p-5 rounded-3xl space-y-4">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <p class="text-[11px] text-rose-400 font-bold text-center">
+            That username and password did not match. Please try again.
+        </p>
+        {% endif %}
+
+        <div class="space-y-1">
+            <label for="{{ form.username.id_for_label }}" class="block text-xs font-bold text-gray-300">Username</label>
+            <input type="text" name="username" id="{{ form.username.id_for_label }}" autofocus required autocomplete="username"
+                   class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-fest-accent">
+        </div>
+
+        <div class="space-y-1">
+            <label for="{{ form.password.id_for_label }}" class="block text-xs font-bold text-gray-300">Password</label>
+            <input type="password" name="password" id="{{ form.password.id_for_label }}" required autocomplete="current-password"
+                   class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-fest-accent">
+        </div>
+
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <button type="submit"
+                class="w-full py-3 rounded-xl bg-gradient-to-r from-fest-accent via-fest-purple to-fest-cyan text-white font-extrabold text-xs shadow-lg active:scale-95 transition">
+            SIGN IN TO CONSOLE
+        </button>
+    </form>
+
+    <p class="text-center text-[11px] text-gray-500">
+        <a href="{% url 'festival:public_app' %}" class="text-fest-cyan font-bold"><i class="fa-solid fa-arrow-left mr-1"></i>Back to the festival app</a>
+    </p>
+</div>
+{% endblock %}

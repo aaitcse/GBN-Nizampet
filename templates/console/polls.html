@@ -1,0 +1,84 @@
+{% extends "console/base.html" %}
+
+{% block console %}
+<div>
+    <h2 class="text-lg font-extrabold text-white">Live polls controller</h2>
+    <p class="text-[11px] text-gray-400">Open polls appear in the attendee app. Closed polls keep their results.</p>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-4 items-start">
+
+    <section class="lg:col-span-2 space-y-3">
+        {% for poll in polls %}
+        <article class="glass-panel p-4 rounded-2xl space-y-3">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <h4 class="text-sm font-bold text-white">{{ poll.question }}</h4>
+                    <p class="text-[10px] text-gray-500 mt-0.5">
+                        {{ poll.total }} vote{{ poll.total|pluralize }} &middot; created {{ poll.created_at|date:"d M Y, H:i" }}
+                    </p>
+                </div>
+                <span class="shrink-0 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full {% if poll.is_active %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/40{% else %}bg-gray-500/20 text-gray-300 border border-gray-500/40{% endif %}">
+                    {% if poll.is_active %}Open{% else %}Closed{% endif %}
+                </span>
+            </div>
+
+            <div class="space-y-2">
+                {% for option in poll.decorated_options %}
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-gray-200 font-bold">{{ option.text }}</span>
+                        <span class="text-gray-400 font-bold">{{ option.pct }}% &middot; {{ option.votes }}</span>
+                    </div>
+                    <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div class="h-full rounded-full bg-gradient-to-r from-fest-accent to-fest-purple" style="width: {{ option.pct }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex gap-1.5 pt-1">
+                <form method="post" action="{% url 'festival:console_poll_action' poll.id 'toggle' %}">
+                    {% csrf_token %}
+                    <button class="px-3 py-1.5 rounded-lg bg-white/10 text-[11px] font-bold text-gray-200 hover:text-white">
+                        {% if poll.is_active %}Close poll{% else %}Reopen poll{% endif %}
+                    </button>
+                </form>
+                <form method="post" action="{% url 'festival:console_poll_action' poll.id 'reset' %}"
+                      onsubmit="return confirm('Reset every vote on this poll to zero?');">
+                    {% csrf_token %}
+                    <button class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] font-bold text-gray-300">Reset votes</button>
+                </form>
+                <form method="post" action="{% url 'festival:console_poll_action' poll.id 'delete' %}"
+                      onsubmit="return confirm('Delete this poll permanently?');">
+                    {% csrf_token %}
+                    <button class="px-3 py-1.5 rounded-lg bg-rose-500/15 text-[11px] font-bold text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                </form>
+            </div>
+        </article>
+        {% empty %}
+        <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-500">
+            No polls yet. Create one on the right and it goes live instantly.
+        </div>
+        {% endfor %}
+    </section>
+
+    <section class="glass-panel p-5 rounded-3xl space-y-4 lg:sticky lg:top-32">
+        <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-plus text-fest-cyan mr-1.5"></i>Create live poll</h3>
+        <form method="post" class="space-y-3">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="text-xs text-rose-300">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+            <div class="space-y-1">
+                <label for="{{ field.id_for_label }}" class="block text-xs font-bold text-gray-300">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="text-[11px] text-rose-400 font-bold">{{ error }}</p>{% endfor %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-fest-accent text-white font-extrabold text-xs active:scale-95 transition">
+                PUBLISH POLL
+            </button>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}{{ brand }} Console - {{ section|title }}{% endblock %}
+{% block body_class %}bg-fest-bg text-fest-text min-h-screen{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex flex-col">
+
+    <header class="sticky top-0 z-30 glass-nav border-b border-white/10 border-t-0">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 shrink-0 rounded-full bg-gradient-to-tr from-fest-accent via-fest-purple to-fest-cyan flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-sliders text-xs text-white"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="font-extrabold text-sm tracking-wide text-white truncate">{{ brand_full|upper }}</h1>
+                    <span class="text-[9px] tracking-widest text-fest-cyan uppercase font-bold">Admin Console</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a href="{% url 'festival:public_app' %}"
+                   class="hidden sm:flex px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-bold text-gray-200 hover:text-white items-center gap-1.5 transition">
+                    <i class="fa-solid fa-mobile-screen text-fest-accent"></i><span>Public app</span>
+                </a>
+                <span class="hidden md:inline text-[11px] text-gray-400">{{ request.user.get_username }}</span>
+                <form method="post" action="{% url 'festival:console_logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-gray-300 hover:text-white transition">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i>Log out
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <nav class="max-w-6xl mx-auto px-4 pb-2 flex gap-1.5 overflow-x-auto hide-scrollbar">
+            {% url 'festival:console_overview' as u_overview %}
+            {% url 'festival:console_events' as u_events %}
+            {% url 'festival:console_gallery' as u_gallery %}
+            {% url 'festival:console_polls' as u_polls %}
+            {% url 'festival:console_feedback' as u_feedback %}
+            <a href="{{ u_overview }}" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition {% if section == 'overview' %}bg-fest-accent text-white{% else %}bg-white/5 text-gray-400 hover:text-white{% endif %}">Overview</a>
+            <a href="{{ u_events }}" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition {% if section == 'events' %}bg-fest-accent text-white{% else %}bg-white/5 text-gray-400 hover:text-white{% endif %}">Events</a>
+            <a href="{{ u_gallery }}" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition {% if section == 'gallery' %}bg-fest-accent text-white{% else %}bg-white/5 text-gray-400 hover:text-white{% endif %}">Photos</a>
+            <a href="{{ u_polls }}" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition {% if section == 'polls' %}bg-fest-accent text-white{% else %}bg-white/5 text-gray-400 hover:text-white{% endif %}">Polls</a>
+            <a href="{{ u_feedback }}" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition {% if section == 'feedback' %}bg-fest-accent text-white{% else %}bg-white/5 text-gray-400 hover:text-white{% endif %}">Feedback</a>
+            <a href="/django-admin/" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap bg-white/5 text-gray-500 hover:text-white transition">Django admin</a>
+        </nav>
+    </header>
+
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 space-y-5">
+        {% if messages %}
+        <div class="space-y-2">
+            {% for message in messages %}
+            <div class="glass-panel px-4 py-2.5 rounded-2xl text-xs font-bold border {% if message.tags == 'error' %}border-rose-500/50 text-rose-200{% else %}border-fest-cyan/40 text-white{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block console %}{% endblock %}
+    </main>
+
+    <footer class="py-5 text-center text-[11px] text-gray-600">
+        {{ brand }} console - changes here appear in the attendee app immediately.
+    </footer>
+</div>
+{% endblock %}

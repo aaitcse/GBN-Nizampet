@@ -1,0 +1,54 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}{{ brand_full }}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        fest: {
+                            bg: '#0A0C14',
+                            card: '#141724',
+                            cardLight: '#1F2436',
+                            accent: '#FF2A7A',
+                            purple: '#8A2BE2',
+                            cyan: '#00F0FF',
+                            gold: '#FFD700',
+                            green: '#10B981',
+                            text: '#F3F4F6'
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2s infinite alternate',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 10px rgba(255, 42, 122, 0.4)' },
+                            '100%': { boxShadow: '0 0 25px rgba(255, 42, 122, 0.8), 0 0 35px rgba(0, 240, 255, 0.5)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}bg-fest-bg text-fest-text{% endblock %}">
+{% block body %}{% endblock %}
+<script src="{% static 'js/app.js' %}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

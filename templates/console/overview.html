@@ -1,0 +1,113 @@
+{% extends "console/base.html" %}
+
+{% block console %}
+<div class="flex items-center justify-between">
+    <div>
+        <h2 class="text-lg font-extrabold text-white">Live metrics dashboard</h2>
+        <p class="text-[11px] text-gray-400">Everything the attendee app is showing right now.</p>
+    </div>
+    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">Live synced</span>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Events</span>
+        <div class="text-2xl font-black text-fest-cyan mt-1">{{ total_events }}</div>
+        <p class="text-[10px] text-gray-500 mt-1">{{ published_events }} published</p>
+    </div>
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Gallery photos</span>
+        <div class="text-2xl font-black text-fest-accent mt-1">{{ photo_stats.approved }}</div>
+        <p class="text-[10px] {% if photo_stats.pending %}text-fest-gold{% else %}text-gray-500{% endif %} mt-1">{{ photo_stats.pending }} awaiting approval</p>
+    </div>
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Active polls</span>
+        <div class="text-2xl font-black text-fest-gold mt-1">{{ active_polls }}</div>
+        <p class="text-[10px] text-gray-500 mt-1">{{ total_votes }} votes from attendees</p>
+    </div>
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Feedback</span>
+        <div class="text-2xl font-black text-emerald-400 mt-1">{{ feedback_stats.total }}</div>
+        <p class="text-[10px] text-gray-500 mt-1">
+            avg {{ feedback_stats.average|floatformat:1|default:"-" }} / 5 &middot; {{ feedback_stats.unresolved }} open
+        </p>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-4">
+    <section class="glass-panel p-4 rounded-2xl space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center justify-between">
+            <span><i class="fa-solid fa-bookmark text-fest-accent mr-1.5"></i>Most bookmarked events</span>
+            <a href="{% url 'festival:console_events' %}" class="text-[11px] text-fest-cyan font-bold">Manage</a>
+        </h3>
+        <div class="space-y-2">
+            {% for event in top_events %}
+            <div class="flex items-center justify-between text-xs border-b border-white/5 pb-2 last:border-0">
+                <div class="min-w-0 pr-2">
+                    <p class="font-bold text-white truncate">{{ event.title }}</p>
+                    <p class="text-[10px] text-gray-500">{{ event.day }} &middot; {{ event.time_slot }} &middot; {{ event.location }}</p>
+                </div>
+                <span class="shrink-0 font-black text-fest-accent">{{ event.saves }}</span>
+            </div>
+            {% empty %}
+            <p class="text-xs text-gray-500">No events yet. Add the first one from the Events tab.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="glass-panel p-4 rounded-2xl space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center justify-between">
+            <span><i class="fa-solid fa-comment-dots text-fest-cyan mr-1.5"></i>Latest feedback</span>
+            <a href="{% url 'festival:console_feedback' %}" class="text-[11px] text-fest-cyan font-bold">Inbox</a>
+        </h3>
+        <div class="space-y-2">
+            {% for entry in recent_feedback %}
+            <div class="border-b border-white/5 pb-2 last:border-0">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold uppercase text-gray-400">{{ entry.category }}</span>
+                    <span class="text-[10px] text-fest-gold">
+                        {% for s in entry.stars %}<i class="fa-solid fa-star"></i>{% endfor %}{% for s in entry.empty_stars %}<i class="fa-regular fa-star text-gray-600"></i>{% endfor %}
+                    </span>
+                </div>
+                <p class="text-xs text-gray-200 mt-1 line-clamp-2">{{ entry.comment }}</p>
+                <p class="text-[10px] text-gray-500 mt-0.5">{{ entry.age }}</p>
+            </div>
+            {% empty %}
+            <p class="text-xs text-gray-500">No feedback submitted yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+{% if pending_photos %}
+<section class="glass-panel p-4 rounded-2xl space-y-3 border border-fest-gold/30">
+    <h3 class="text-sm font-bold text-white flex items-center justify-between">
+        <span><i class="fa-solid fa-hourglass-half text-fest-gold mr-1.5"></i>Photos waiting for approval</span>
+        <a href="{% url 'festival:console_gallery' %}?status=pending" class="text-[11px] text-fest-cyan font-bold">Review all</a>
+    </h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {% for photo in pending_photos %}
+        <div class="rounded-xl overflow-hidden border border-white/10">
+            <img src="{{ photo.display_image }}" alt="{{ photo.title }}" class="w-full h-24 object-cover">
+            <div class="p-2 flex items-center justify-between gap-1">
+                <span class="text-[10px] text-gray-300 truncate">{{ photo.title }}</span>
+                <form method="post" action="{% url 'festival:console_photo_action' photo.id 'approve' %}">
+                    {% csrf_token %}
+                    <button class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300">Approve</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="glass-panel p-4 rounded-2xl">
+    <h3 class="text-xs font-bold text-white mb-1"><i class="fa-solid fa-circle-info text-fest-cyan mr-1.5"></i>How sync works</h3>
+    <p class="text-[11px] text-gray-300 leading-relaxed">
+        Events, approved photos and published polls are read straight from the database by the attendee app,
+        so anything you change here shows up on the next screen refresh. Attendee bookmarks, likes and votes
+        are tied to their browser session - one vote per poll, per device.
+    </p>
+</section>
+{% endblock %}
