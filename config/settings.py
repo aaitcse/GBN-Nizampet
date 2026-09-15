@@ -186,6 +186,7 @@ FEST_TSHIRT_NOTE = os.environ.get(
 
 FEST_WELCOME = os.environ.get(
     "FEST_WELCOME",
-    "Seven days of aarti, music, food and light across the campus. "
-    "Save what you love, vote for the sets, and send us your best shots.",
+    "Seven days of aarti, music, food, lights, and togetherness with our community. ❤️\n"
+    "Capture your favourite moments, vote for the best performances, "
+    "and share your beautiful photos with us!",
 )
