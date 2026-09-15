@@ -424,7 +424,12 @@ class ViewCountTests(TestCase):
 class TshirtOrderTests(TestCase):
     def order(self, sizes=("L", "L"), **overrides):
         """Post the form the way the page does: a count, then a size per shirt."""
-        payload = {"flat_number": "b-404", "mobile": "98765 43210", "quantity": len(sizes)}
+        payload = {
+            "flat_number": "734",
+            "mobile": "98765 43210",
+            "name": "Pavan",
+            "quantity": len(sizes),
+        }
         payload.update({f"size_{i}": size for i, size in enumerate(sizes, start=1)})
         payload.update(overrides)
         return self.client.post(
@@ -436,7 +441,7 @@ class TshirtOrderTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         order = TshirtOrder.objects.get()  # both shirts are size L, so one row
-        self.assertEqual(order.flat_number, "B-404")  # normalised to upper case
+        self.assertEqual(order.flat_number, "734")
         self.assertEqual(order.mobile, "9876543210")  # spaces stripped
         self.assertEqual(order.quantity, 2)
         self.assertEqual(order.amount, 400)  # 2 x 200
@@ -479,10 +484,23 @@ class TshirtOrderTests(TestCase):
         self.assertEqual(row.quantity, 3)
         self.assertEqual(TshirtOrder.objects.count(), 1)
 
+    def test_flat_number_must_be_digits(self):
+        response = self.order(flat_number="B-404")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("digits only", str(response.json()["errors"]))
+        self.assertEqual(TshirtOrder.objects.count(), 0)
+
+    def test_name_is_required(self):
+        response = self.order(name="")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("name", str(response.json()["errors"]))
+        self.assertEqual(TshirtOrder.objects.count(), 0)
+
     def test_a_missing_size_is_refused(self):
         response = self.client.post(
             reverse("festival:order_tshirt"),
-            {"flat_number": "B-404", "mobile": "9876543210", "quantity": 3, "size_1": "L"},
+            {"flat_number": "734", "mobile": "9876543210", "name": "Pavan",
+             "quantity": 3, "size_1": "L"},
             HTTP_X_REQUESTED_WITH="fetch",
         )
         self.assertEqual(response.status_code, 400)
@@ -510,21 +528,21 @@ class TshirtOrderTests(TestCase):
 
     def test_a_device_only_sees_its_own_orders(self):
         self.order()
-        TshirtOrder.objects.create(flat_number="C-101", mobile="9000000000", size="S", quantity=5)
+        TshirtOrder.objects.create(flat_number="1099", mobile="9000000000", size="S", quantity=5)
 
         response = self.client.get(reverse("festival:public_app"), {"tab": "tshirt"})
         self.assertEqual(response.context["my_shirt_count"], 2)
-        self.assertNotContains(response, "C-101")
+        self.assertNotContains(response, "1099")
 
 
 class TshirtConsoleTests(TestCase):
     def setUp(self):
         get_user_model().objects.create_user("organiser", password="pw12345!", is_staff=True)
         self.client.login(username="organiser", password="pw12345!")
-        TshirtOrder.objects.create(flat_number="A-101", mobile="9000000001", size="M", quantity=2)
-        TshirtOrder.objects.create(flat_number="A-102", mobile="9000000002", size="M", quantity=1)
+        TshirtOrder.objects.create(flat_number="101", mobile="9000000001", size="M", quantity=2)
+        TshirtOrder.objects.create(flat_number="102", mobile="9000000002", size="M", quantity=1)
         self.big = TshirtOrder.objects.create(
-            flat_number="B-201", mobile="9000000003", size="XL", quantity=4
+            flat_number="201", mobile="9000000003", size="XL", quantity=4
         )
 
     def test_order_sheet_totals_and_size_breakdown(self):
@@ -546,12 +564,26 @@ class TshirtConsoleTests(TestCase):
         self.assertEqual(response.context["collected_shirts"], 4)
         self.assertEqual(response.context["pending_shirts"], 3)
 
-    def test_export_lists_every_order(self):
+    def test_export_is_an_excel_workbook_with_a_summary(self):
+        import io
+
+        from openpyxl import load_workbook
+
         response = self.client.get(reverse("festival:console_tshirt_export"))
-        body = response.content.decode()
-        self.assertEqual(response["Content-Type"], "text/csv")
-        for flat in ["A-101", "A-102", "B-201"]:
-            self.assertIn(flat, body)
+        self.assertIn("spreadsheetml", response["Content-Type"])
+        self.assertIn(".xlsx", response["Content-Disposition"])
+
+        book = load_workbook(io.BytesIO(response.content))
+        self.assertEqual(book.sheetnames, ["Summary", "Orders"])
+
+        summary = {row[0]: row[1] for row in book["Summary"].iter_rows(values_only=True) if row[0]}
+        self.assertEqual(summary["Shirts to print"], 7)
+        self.assertEqual(summary["Amount to collect"], 1400)
+        self.assertEqual(summary["Households ordered"], 3)
+        self.assertEqual(summary["Total"], 7)  # size breakdown adds up
+
+        flats = {str(row[0]) for row in book["Orders"].iter_rows(min_row=2, values_only=True)}
+        self.assertEqual(flats, {"101", "102", "201"})
 
     def test_order_sheet_needs_staff(self):
         self.client.logout()

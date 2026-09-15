@@ -149,9 +149,9 @@ class TshirtOrderForm(forms.Form):
     which is what the printer needs.
     """
 
-    flat_number = forms.CharField(max_length=30)
+    flat_number = forms.CharField(max_length=10)
     mobile = forms.CharField(max_length=15)
-    name = forms.CharField(max_length=80, required=False)
+    name = forms.CharField(max_length=80)
     quantity = forms.IntegerField(min_value=1, max_value=20)
 
     def clean(self):
@@ -191,10 +191,16 @@ class TshirtOrderForm(forms.Form):
         return rows
 
     def clean_flat_number(self):
-        flat = self.cleaned_data["flat_number"].strip().upper()
-        if not flat:
-            raise forms.ValidationError("Which flat should we deliver to?")
+        flat = re.sub(r"\s", "", self.cleaned_data["flat_number"])
+        if not flat.isdigit():
+            raise forms.ValidationError("Flat number should be digits only, like 734.")
         return flat
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if not name:
+            raise forms.ValidationError("Tell us your name so we know who to hand it to.")
+        return name
 
     def clean_mobile(self):
         raw = self.cleaned_data["mobile"]
@@ -206,9 +212,6 @@ class TshirtOrderForm(forms.Form):
         if len(digits) != 10:
             raise forms.ValidationError("Enter a 10 digit mobile number.")
         return digits
-
-    def clean_name(self):
-        return self.cleaned_data["name"].strip()
 
 
 class FeedbackForm(forms.ModelForm):

@@ -1,5 +1,6 @@
 Django>=5.2,<6.0
 Pillow>=11.0
+openpyxl>=3.1
 
 # Production stack (Render)
 gunicorn>=23.0

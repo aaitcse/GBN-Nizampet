@@ -2,6 +2,7 @@
 
 import csv
 import logging
+from collections import Counter
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -18,6 +19,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
 
 from .forms import (
     EventForm,
@@ -696,28 +699,109 @@ def console_tshirt_action(request, pk, action):
     return redirect(request.META.get("HTTP_REFERER", reverse("festival:console_tshirts")))
 
 
+HEADER_FILL = PatternFill("solid", fgColor="1F2436")
+HEADER_FONT = Font(bold=True, color="FFFFFF")
+TITLE_FONT = Font(bold=True, size=14)
+RUPEES = '"₹"#,##0'
+
+
+def _style_header(sheet, row=1):
+    for cell in sheet[row]:
+        cell.fill = HEADER_FILL
+        cell.font = HEADER_FONT
+        cell.alignment = Alignment(horizontal="center")
+
+
+def _fit_columns(sheet, widths):
+    for column, width in widths.items():
+        sheet.column_dimensions[column].width = width
+
+
 @staff_required
 def console_tshirt_export(request):
-    response = HttpResponse(content_type="text/csv")
-    stamp = timezone.localtime().strftime("%Y%m%d-%H%M")
-    brand = slugify(settings.FEST_BRAND) or "festival"
-    response["Content-Disposition"] = f'attachment; filename="{brand}-tshirts-{stamp}.csv"'
+    """Workbook with a Summary sheet for the printer and every order beside it."""
+    price = settings.FEST_TSHIRT_PRICE
+    orders = list(TshirtOrder.objects.all())
+    shirts = sum(order.quantity for order in orders)
+    collected = sum(order.quantity for order in orders if order.is_collected)
 
-    writer = csv.writer(response)
-    writer.writerow(["Flat", "Name", "Mobile", "Size", "Quantity", "Amount (INR)", "Collected", "Ordered"])
-    for order in TshirtOrder.objects.all():
-        writer.writerow(
+    book = Workbook()
+
+    # ---- Summary -------------------------------------------------------
+    summary = book.active
+    summary.title = "Summary"
+    summary["A1"] = f"{settings.FEST_BRAND_FULL} - T-shirt orders"
+    summary["A1"].font = TITLE_FONT
+    summary["A2"] = f"As of {timezone.localtime().strftime('%d %b %Y, %I:%M %p')}"
+    summary["A2"].font = Font(italic=True, size=9)
+
+    summary.append([])
+    for label, value, fmt in [
+        ("Households ordered", len({order.flat_number for order in orders}), None),
+        ("Order lines", len(orders), None),
+        ("Shirts to print", shirts, None),
+        ("Price per shirt", price, RUPEES),
+        ("Amount to collect", shirts * price, RUPEES),
+        ("Handed over", collected, None),
+        ("Still pending", shirts - collected, None),
+    ]:
+        summary.append([label, value])
+        summary.cell(row=summary.max_row, column=1).font = Font(bold=True)
+        if fmt:
+            summary.cell(row=summary.max_row, column=2).number_format = fmt
+
+    summary.append([])
+    summary.append(["Size", "Shirts", "Amount"])
+    _style_header(summary, summary.max_row)
+
+    labels = dict(TshirtOrder.SIZE_CHOICES)
+    per_size = Counter()
+    for order in orders:
+        per_size[order.size] += order.quantity
+    # Keep the printer's list in the app's own size order, not alphabetical.
+    for value, label in TshirtOrder.SIZE_CHOICES:
+        if per_size.get(value):
+            summary.append([label, per_size[value], per_size[value] * price])
+            summary.cell(row=summary.max_row, column=3).number_format = RUPEES
+
+    summary.append(["Total", shirts, shirts * price])
+    for column in (1, 2, 3):
+        summary.cell(row=summary.max_row, column=column).font = Font(bold=True)
+    summary.cell(row=summary.max_row, column=3).number_format = RUPEES
+    _fit_columns(summary, {"A": 22, "B": 12, "C": 14})
+
+    # ---- Orders --------------------------------------------------------
+    sheet = book.create_sheet("Orders")
+    sheet.append(["Flat", "Name", "Mobile", "Size", "Quantity", "Amount", "Handed over", "Ordered"])
+    _style_header(sheet)
+
+    for order in orders:
+        sheet.append(
             [
                 order.flat_number,
-                order.name,
+                order.name or "",
                 order.mobile,
-                order.get_size_display(),
+                labels.get(order.size, order.size),
                 order.quantity,
                 order.amount,
-                "yes" if order.is_collected else "no",
-                timezone.localtime(order.created_at).strftime("%Y-%m-%d %H:%M"),
+                "Yes" if order.is_collected else "No",
+                timezone.localtime(order.created_at).replace(tzinfo=None),
             ]
         )
+        sheet.cell(row=sheet.max_row, column=6).number_format = RUPEES
+        sheet.cell(row=sheet.max_row, column=8).number_format = "dd mmm yyyy hh:mm"
+
+    _fit_columns(sheet, {"A": 10, "B": 22, "C": 15, "D": 20, "E": 10, "F": 12, "G": 13, "H": 20})
+    sheet.freeze_panes = "A2"
+    sheet.auto_filter.ref = sheet.dimensions
+
+    stamp = timezone.localtime().strftime("%Y%m%d-%H%M")
+    brand = slugify(settings.FEST_BRAND) or "festival"
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="{brand}-tshirts-{stamp}.xlsx"'
+    book.save(response)
     return response
 
 

@@ -24,7 +24,8 @@
     <div class="grid grid-cols-2 gap-3">
         <div>
             <label for="ts-flat" class="block text-[11px] font-bold text-gray-300 mb-1">Flat number *</label>
-            <input type="text" name="flat_number" id="ts-flat" required placeholder="e.g. B-404"
+            <input type="text" name="flat_number" id="ts-flat" required inputmode="numeric"
+                   pattern="[0-9]*" maxlength="10" placeholder="e.g. 734"
                    class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
         </div>
         <div>
@@ -35,8 +36,8 @@
     </div>
 
     <div>
-        <label for="ts-name" class="block text-[11px] font-bold text-gray-300 mb-1">Your name (optional)</label>
-        <input type="text" name="name" id="ts-name" placeholder="So we know who to call"
+        <label for="ts-name" class="block text-[11px] font-bold text-gray-300 mb-1">Your name *</label>
+        <input type="text" name="name" id="ts-name" required placeholder="So we know who to hand it to"
                class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
     </div>
 
