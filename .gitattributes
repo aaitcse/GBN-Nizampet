@@ -1,0 +1,4 @@
+# Keep shell scripts LF-only so they run on Render's Linux builders,
+# even when the working copy is checked out on Windows.
+*.sh text eol=lf
+build.sh text eol=lf
