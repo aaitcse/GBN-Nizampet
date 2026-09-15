@@ -220,12 +220,6 @@
         $("#upload-error").classList.add("hidden");
     }
 
-    $$(".preset-btn").forEach((btn) =>
-        btn.addEventListener("click", () => {
-            $("#up-url").value = btn.dataset.url;
-        })
-    );
-
     $("#upload-form").addEventListener("submit", (e) => {
         e.preventDefault();
         const form = e.target;

@@ -1,8 +1,11 @@
 """End-to-end coverage of the attendee flows and the organiser console."""
 
+import io
+import tempfile
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -24,6 +27,15 @@ from .models import (
     festival_day_choices,
 )
 from .views import countdown_label, view_stats
+
+
+def tiny_jpeg(name="shot.jpg"):
+    """A real (very small) JPEG, so ImageField validation has something to read."""
+    from PIL import Image
+
+    buffer = io.BytesIO()
+    Image.new("RGB", (12, 12), (255, 42, 122)).save(buffer, format="JPEG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/jpeg")
 
 
 def make_event(**kwargs):
@@ -178,24 +190,32 @@ class PublicAppTests(TestCase):
         self.assertEqual(PhotoLike.objects.count(), 0)
 
     def test_photo_upload_waits_for_approval(self):
-        response = self.client.post(
-            reverse("festival:upload_photo"),
-            {"title": "My capture", "image_url": "https://example.com/x.jpg", "category": "Crowd",
-             "author": "Priya"},
-            HTTP_X_REQUESTED_WITH="fetch",
-        )
-        self.assertEqual(response.status_code, 200)
-        photo = Photo.objects.get(title="My capture")
-        self.assertFalse(photo.is_approved)
-        self.assertNotContains(self.client.get(reverse("festival:gallery_partial")), "My capture")
+        with tempfile.TemporaryDirectory() as media:
+            with override_settings(MEDIA_ROOT=media):
+                response = self.client.post(
+                    reverse("festival:upload_photo"),
+                    {"title": "My capture", "image": tiny_jpeg(), "category": "Crowd",
+                     "author": "Priya"},
+                    HTTP_X_REQUESTED_WITH="fetch",
+                )
+                self.assertEqual(response.status_code, 200)
+                photo = Photo.objects.get(title="My capture")
+                self.assertFalse(photo.is_approved)
+                self.assertTrue(photo.image)
+                self.assertNotContains(
+                    self.client.get(reverse("festival:gallery_partial")), "My capture"
+                )
 
-    def test_photo_upload_requires_a_file_or_url(self):
+    def test_photo_upload_needs_an_actual_file(self):
+        # Attendees upload from their phone; a URL alone is no longer accepted.
         response = self.client.post(
             reverse("festival:upload_photo"),
-            {"title": "Nothing attached", "category": "Crowd"},
+            {"title": "Nothing attached", "category": "Crowd",
+             "image_url": "https://example.com/x.jpg"},
             HTTP_X_REQUESTED_WITH="fetch",
         )
         self.assertEqual(response.status_code, 400)
+        self.assertIn("image", response.json()["errors"])
         self.assertFalse(Photo.objects.filter(title="Nothing attached").exists())
 
     def test_vote_counts_once_per_session(self):

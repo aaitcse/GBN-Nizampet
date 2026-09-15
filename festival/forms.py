@@ -67,17 +67,20 @@ class PhotoForm(forms.ModelForm):
 
 
 class PhotoUploadForm(forms.ModelForm):
-    """Attendee-facing upload: no approval flag, image file or URL required."""
+    """Attendee-facing upload: a photo from their device, nothing else.
+
+    Organisers can still add pictures by URL from the console; attendees at a
+    festival are holding a phone, so the file picker is the whole story.
+    """
 
     class Meta:
         model = Photo
-        fields = ["title", "category", "image", "image_url", "author"]
+        fields = ["title", "category", "image", "author"]
 
-    def clean(self):
-        cleaned = super().clean()
-        if not cleaned.get("image") and not cleaned.get("image_url"):
-            raise forms.ValidationError("Pick a photo from your device or paste an image URL.")
-        return cleaned
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["image"].required = True
+        self.fields["image"].error_messages["required"] = "Pick a photo from your device first."
 
     def clean_title(self):
         return self.cleaned_data["title"].strip() or "Festival Capture"
