@@ -2,7 +2,7 @@
 
 import csv
 import logging
-from datetime import date
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib import messages
@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db import IntegrityError, connections, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.db.models import Avg, Count, F, Q, Sum, Value
-from django.db.models.functions import Greatest
+from django.db.models.functions import Greatest, TruncDate
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
@@ -24,6 +24,7 @@ from .models import (
     Bookmark,
     Event,
     Feedback,
+    PageView,
     Photo,
     PhotoLike,
     Poll,
@@ -264,6 +265,8 @@ def public_app(request):
     context.update(gallery_context(request))
     context.update(polls_context(request))
     context.update(home_context(request))
+
+    PageView.objects.create(session_key=session_key(request), tab=context["active_tab"][:20])
     return render(request, "public/app.html", context)
 
 
@@ -393,6 +396,43 @@ def submit_feedback(request):
 # --------------------------------------------------------------------------- #
 # organiser console
 # --------------------------------------------------------------------------- #
+def view_stats():
+    """Visit counters for the console: totals, today, and a daily breakdown."""
+    today = timezone.localdate()
+    week_start = today - timedelta(days=6)
+
+    per_day = {
+        row["day"]: row["hits"]
+        for row in PageView.objects.filter(created_at__date__gte=week_start)
+        .annotate(day=TruncDate("created_at"))
+        .values("day")
+        .annotate(hits=Count("id"))
+    }
+    daily = [
+        {"date": week_start + timedelta(days=offset), "hits": per_day.get(week_start + timedelta(days=offset), 0)}
+        for offset in range(7)
+    ]
+    busiest = max((row["hits"] for row in daily), default=0)
+    for row in daily:
+        row["pct"] = round(row["hits"] * 100 / busiest) if busiest else 0
+        row["is_today"] = row["date"] == today
+
+    tabs = list(
+        PageView.objects.exclude(tab="").values("tab").annotate(hits=Count("id")).order_by("-hits")
+    )
+    tab_total = sum(row["hits"] for row in tabs) or 1
+    for row in tabs:
+        row["pct"] = round(row["hits"] * 100 / tab_total)
+
+    return {
+        "views_total": PageView.objects.count(),
+        "views_devices": PageView.objects.values("session_key").distinct().count(),
+        "views_today": PageView.objects.filter(created_at__date=today).count(),
+        "views_daily": daily,
+        "views_tabs": tabs,
+    }
+
+
 @staff_required
 def console_overview(request):
     photo_stats = Photo.objects.aggregate(
@@ -416,6 +456,7 @@ def console_overview(request):
         "total_polls": Poll.objects.count(),
         "total_votes": Vote.objects.count(),
         "total_bookmarks": Bookmark.objects.count(),
+        **view_stats(),
         "recent_feedback": Feedback.objects.all()[:5],
         "pending_photos": Photo.objects.filter(is_approved=False)[:4],
         "top_events": Event.objects.annotate(saves=Count("bookmarks")).order_by("-saves")[:5],

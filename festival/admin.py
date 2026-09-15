@@ -1,7 +1,17 @@
 from django.conf import settings
 from django.contrib import admin
 
-from .models import Bookmark, Event, Feedback, Photo, PhotoLike, Poll, PollOption, Vote
+from .models import (
+    Bookmark,
+    Event,
+    Feedback,
+    PageView,
+    Photo,
+    PhotoLike,
+    Poll,
+    PollOption,
+    Vote,
+)
 
 
 @admin.register(Event)
@@ -50,6 +60,13 @@ class FeedbackAdmin(admin.ModelAdmin):
     @admin.display(description="Comment")
     def short_comment(self, obj):
         return obj.comment[:60] + ("..." if len(obj.comment) > 60 else "")
+
+
+@admin.register(PageView)
+class PageViewAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "tab", "session_key")
+    list_filter = ("tab", "created_at")
+    date_hierarchy = "created_at"
 
 
 admin.site.register([Bookmark, PhotoLike, Vote])

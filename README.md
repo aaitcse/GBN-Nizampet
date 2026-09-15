@@ -19,7 +19,7 @@ organisers can see and manage.
 
 **Organiser console** (`/console/`, staff login required):
 
-- **Overview** - counts for events, photos, polls, votes and feedback; average rating; most-bookmarked events; latest feedback; a quick-approve strip for pending photos.
+- **Overview** - app view counts (total, unique devices, today, a seven day bar chart and which tab people land on); counts for events, photos, polls, votes and feedback; average rating; most-bookmarked events; latest feedback; a quick-approve strip for pending photos.
 - **Events** - create, edit, delete, publish/unpublish; per-event bookmark counts; filter by day.
 - **Photos** - approve, hide or delete attendee uploads; add official photos.
 - **Polls** - publish a poll with 2-4 options, close/reopen it, reset its counters, delete it.
@@ -79,7 +79,7 @@ or set the matching environment variable, and every page follows - no template e
 python manage.py test
 ```
 
-39 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
+45 tests cover the home screen, the attendee flows (search, bookmarks, one-like-per-device, one-vote-per-poll,
 upload moderation, feedback validation) and every console action.
 
 ## How it is put together
@@ -87,7 +87,7 @@ upload moderation, feedback validation) and every console action.
 ```
 config/            settings, root URLs
 festival/
-  models.py        Event, Bookmark, Photo, PhotoLike, Poll, PollOption, Vote, Feedback
+  models.py        Event, Bookmark, Photo, PhotoLike, Poll, PollOption, Vote, Feedback, PageView
   views.py         public views + JSON/partial endpoints + console views
   forms.py         event, photo, poll and feedback forms with themed widgets
   urls.py          all routes, namespaced as "festival"

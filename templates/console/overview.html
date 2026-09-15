@@ -9,7 +9,12 @@
     <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">Live synced</span>
 </div>
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+    <div class="glass-panel p-4 rounded-2xl">
+        <span class="text-[10px] uppercase font-bold text-gray-400">App views</span>
+        <div class="text-2xl font-black text-white mt-1">{{ views_total }}</div>
+        <p class="text-[10px] text-gray-500 mt-1">{{ views_devices }} device{{ views_devices|pluralize }} &middot; {{ views_today }} today</p>
+    </div>
     <div class="glass-panel p-4 rounded-2xl">
         <span class="text-[10px] uppercase font-bold text-gray-400">Events</span>
         <div class="text-2xl font-black text-fest-cyan mt-1">{{ total_events }}</div>
@@ -33,6 +38,46 @@
         </p>
     </div>
 </div>
+
+<section class="glass-panel p-4 rounded-2xl space-y-4">
+    <h3 class="text-sm font-bold text-white">
+        <i class="fa-solid fa-chart-line text-fest-cyan mr-1.5"></i>App views, last 7 days
+    </h3>
+
+    <div class="space-y-2">
+        {% for row in views_daily %}
+        <div class="flex items-center gap-3">
+            <span class="w-20 shrink-0 text-[11px] font-bold {% if row.is_today %}text-fest-cyan{% else %}text-gray-400{% endif %}">
+                {{ row.date|date:"D d M" }}
+            </span>
+            <div class="flex-1 h-4 rounded-md bg-white/5 overflow-hidden">
+                <div class="h-full rounded-md {% if row.is_today %}bg-gradient-to-r from-fest-cyan to-fest-purple{% else %}bg-white/20{% endif %}"
+                     style="width: {{ row.pct }}%"></div>
+            </div>
+            <span class="w-10 shrink-0 text-right text-[11px] font-black {% if row.hits %}text-white{% else %}text-gray-600{% endif %}">{{ row.hits }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if views_tabs %}
+    <div class="pt-1 space-y-2 border-t border-white/5">
+        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider pt-2">Which tab they open first</h4>
+        <div class="flex flex-wrap gap-2">
+            {% for row in views_tabs %}
+            <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold text-gray-200">
+                {{ row.tab|title }} <span class="text-fest-cyan">{{ row.hits }}</span>
+                <span class="text-gray-500">&middot; {{ row.pct }}%</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <p class="text-[10px] text-gray-500">
+        A view is one load of the attendee app. Devices are counted by browser session, so the same
+        phone returning tomorrow counts once more.
+    </p>
+</section>
 
 <div class="grid lg:grid-cols-2 gap-4">
     <section class="glass-panel p-4 rounded-2xl space-y-3">

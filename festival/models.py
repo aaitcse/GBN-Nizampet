@@ -204,6 +204,24 @@ class Vote(models.Model):
         unique_together = ("poll", "session_key")
 
 
+class PageView(models.Model):
+    """One load of the attendee app, counted for the console view metrics.
+
+    Session-scoped like bookmarks and votes, so "unique devices" means distinct
+    browsers rather than named people - nobody signs in to the attendee app.
+    """
+
+    session_key = models.CharField(max_length=64, db_index=True)
+    tab = models.CharField(max_length=20, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.tab or 'app'} @ {self.created_at:%Y-%m-%d %H:%M}"
+
+
 class Feedback(models.Model):
     """Attendee feedback and suggestions landing in the organiser inbox."""
 

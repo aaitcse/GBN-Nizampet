@@ -11,6 +11,7 @@ from .models import (
     Bookmark,
     Event,
     Feedback,
+    PageView,
     Photo,
     PhotoLike,
     Poll,
@@ -19,7 +20,7 @@ from .models import (
     current_festival_day,
     festival_day_choices,
 )
-from .views import countdown_label
+from .views import countdown_label, view_stats
 
 
 def make_event(**kwargs):
@@ -246,6 +247,60 @@ class PublicAppTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Feedback.objects.count(), 0)
+
+
+class ViewCountTests(TestCase):
+    def test_opening_the_app_records_a_view_with_its_tab(self):
+        self.client.get(reverse("festival:public_app"))
+        self.client.get(reverse("festival:public_app"), {"tab": "gallery"})
+
+        self.assertEqual(PageView.objects.count(), 2)
+        self.assertEqual(list(PageView.objects.values_list("tab", flat=True)), ["gallery", "home"])
+
+    def test_partials_and_actions_are_not_counted_as_views(self):
+        self.client.get(reverse("festival:events_partial"))
+        self.client.get(reverse("festival:gallery_partial"))
+        self.client.get(reverse("festival:healthz"))
+        self.assertEqual(PageView.objects.count(), 0)
+
+    def test_repeat_visits_from_one_device_count_once_as_a_device(self):
+        for _ in range(4):
+            self.client.get(reverse("festival:public_app"))
+
+        stats = view_stats()
+        self.assertEqual(stats["views_total"], 4)
+        self.assertEqual(stats["views_devices"], 1)
+        self.assertEqual(stats["views_today"], 4)
+
+    def test_daily_breakdown_covers_seven_days_ending_today(self):
+        self.client.get(reverse("festival:public_app"))
+        daily = view_stats()["views_daily"]
+
+        self.assertEqual(len(daily), 7)
+        self.assertEqual(daily[-1]["date"], timezone.localdate())
+        self.assertTrue(daily[-1]["is_today"])
+        self.assertEqual(daily[-1]["hits"], 1)
+        self.assertEqual(daily[-1]["pct"], 100)
+        self.assertEqual(sum(row["hits"] for row in daily[:-1]), 0)
+
+    def test_tab_breakdown_percentages(self):
+        for tab in ["home", "home", "polls", "events"]:
+            self.client.get(reverse("festival:public_app"), {"tab": tab})
+
+        tabs = {row["tab"]: row for row in view_stats()["views_tabs"]}
+        self.assertEqual(tabs["home"]["hits"], 2)
+        self.assertEqual(tabs["home"]["pct"], 50)
+        self.assertEqual(tabs["polls"]["hits"], 1)
+
+    def test_console_overview_shows_the_counters(self):
+        self.client.get(reverse("festival:public_app"))
+        get_user_model().objects.create_user("boss", password="pw12345!", is_staff=True)
+        self.client.login(username="boss", password="pw12345!")
+
+        response = self.client.get(reverse("festival:console_overview"))
+        self.assertContains(response, "App views")
+        self.assertContains(response, "App views, last 7 days")
+        self.assertEqual(response.context["views_total"], 1)
 
 
 class HealthCheckTests(TestCase):
