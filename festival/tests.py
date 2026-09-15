@@ -564,6 +564,19 @@ class TshirtConsoleTests(TestCase):
         self.assertEqual(response.context["collected_shirts"], 4)
         self.assertEqual(response.context["pending_shirts"], 3)
 
+    def test_kids_and_adult_subtotals_appear_when_both_are_ordered(self):
+        import io
+
+        from openpyxl import load_workbook
+
+        TshirtOrder.objects.create(flat_number="303", mobile="9000000009", size="Kids-M", quantity=2)
+        book = load_workbook(io.BytesIO(self.client.get(reverse("festival:console_tshirt_export")).content))
+        summary = {row[0]: row[1] for row in book["Summary"].iter_rows(values_only=True) if row[0]}
+
+        self.assertEqual(summary["Kids subtotal"], 2)
+        self.assertEqual(summary["Adult subtotal"], 7)
+        self.assertEqual(summary["TOTAL SHIRTS TO PRINT"], 9)
+
     def test_export_is_an_excel_workbook_with_a_summary(self):
         import io
 
@@ -577,10 +590,13 @@ class TshirtConsoleTests(TestCase):
         self.assertEqual(book.sheetnames, ["Summary", "Orders"])
 
         summary = {row[0]: row[1] for row in book["Summary"].iter_rows(values_only=True) if row[0]}
-        self.assertEqual(summary["Shirts to print"], 7)
+        # The print order, in the app's size order, with the totals beneath it.
+        self.assertEqual(summary["Adult M"], 3)
+        self.assertEqual(summary["Adult XL"], 4)
+        self.assertEqual(summary["TOTAL SHIRTS TO PRINT"], 7)
         self.assertEqual(summary["Amount to collect"], 1400)
+        self.assertEqual(summary["Price per shirt"], 200)
         self.assertEqual(summary["Households ordered"], 3)
-        self.assertEqual(summary["Total"], 7)  # size breakdown adds up
 
         flats = {str(row[0]) for row in book["Orders"].iter_rows(min_row=2, values_only=True)}
         self.assertEqual(flats, {"101", "102", "201"})

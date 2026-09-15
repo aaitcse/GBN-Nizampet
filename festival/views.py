@@ -726,48 +726,66 @@ def console_tshirt_export(request):
 
     book = Workbook()
 
-    # ---- Summary -------------------------------------------------------
-    summary = book.active
-    summary.title = "Summary"
-    summary["A1"] = f"{settings.FEST_BRAND_FULL} - T-shirt orders"
-    summary["A1"].font = TITLE_FONT
-    summary["A2"] = f"As of {timezone.localtime().strftime('%d %b %Y, %I:%M %p')}"
-    summary["A2"].font = Font(italic=True, size=9)
-
-    summary.append([])
-    for label, value, fmt in [
-        ("Households ordered", len({order.flat_number for order in orders}), None),
-        ("Order lines", len(orders), None),
-        ("Shirts to print", shirts, None),
-        ("Price per shirt", price, RUPEES),
-        ("Amount to collect", shirts * price, RUPEES),
-        ("Handed over", collected, None),
-        ("Still pending", shirts - collected, None),
-    ]:
-        summary.append([label, value])
-        summary.cell(row=summary.max_row, column=1).font = Font(bold=True)
-        if fmt:
-            summary.cell(row=summary.max_row, column=2).number_format = fmt
-
-    summary.append([])
-    summary.append(["Size", "Shirts", "Amount"])
-    _style_header(summary, summary.max_row)
-
+    # ---- Summary: what to tell the printer, then the money -------------
     labels = dict(TshirtOrder.SIZE_CHOICES)
     per_size = Counter()
     for order in orders:
         per_size[order.size] += order.quantity
-    # Keep the printer's list in the app's own size order, not alphabetical.
-    for value, label in TshirtOrder.SIZE_CHOICES:
-        if per_size.get(value):
-            summary.append([label, per_size[value], per_size[value] * price])
-            summary.cell(row=summary.max_row, column=3).number_format = RUPEES
 
-    summary.append(["Total", shirts, shirts * price])
-    for column in (1, 2, 3):
-        summary.cell(row=summary.max_row, column=column).font = Font(bold=True)
-    summary.cell(row=summary.max_row, column=3).number_format = RUPEES
-    _fit_columns(summary, {"A": 22, "B": 12, "C": 14})
+    summary = book.active
+    summary.title = "Summary"
+    summary["A1"] = f"{settings.FEST_BRAND_FULL} - T-shirt print order"
+    summary["A1"].font = TITLE_FONT
+    summary["A2"] = f"Prepared {timezone.localtime().strftime('%d %b %Y, %I:%M %p')}"
+    summary["A2"].font = Font(italic=True, size=9)
+
+    def section(title):
+        summary.append([])
+        summary.append([title])
+        summary.cell(row=summary.max_row, column=1).font = Font(bold=True, size=11, color="FF2A7A")
+
+    def line(label, value, fmt=None, bold=False):
+        summary.append([label, value])
+        row = summary.max_row
+        summary.cell(row=row, column=1).font = Font(bold=bold or True)
+        if bold:
+            summary.cell(row=row, column=2).font = Font(bold=True)
+        if fmt:
+            summary.cell(row=row, column=2).number_format = fmt
+
+    # The list to hand over: size, then how many of it.
+    section("WHAT TO PRINT")
+    summary.append(["Size", "Quantity"])
+    _style_header(summary, summary.max_row)
+
+    kids = adults = 0
+    # The app's own size order, so the printer reads it the way it is stocked.
+    for value, label in TshirtOrder.SIZE_CHOICES:
+        count = per_size.get(value, 0)
+        if not count:
+            continue
+        summary.append([label, count])
+        if value.startswith("Kids"):
+            kids += count
+        else:
+            adults += count
+
+    if kids and adults:
+        line("Kids subtotal", kids)
+        line("Adult subtotal", adults)
+    line("TOTAL SHIRTS TO PRINT", shirts, bold=True)
+
+    section("MONEY")
+    line("Price per shirt", price, RUPEES)
+    line("Amount to collect", shirts * price, RUPEES, bold=True)
+
+    section("PROGRESS")
+    line("Households ordered", len({order.flat_number for order in orders}))
+    line("Order lines", len(orders))
+    line("Handed over", collected)
+    line("Still pending", shirts - collected)
+
+    _fit_columns(summary, {"A": 26, "B": 14, "C": 14})
 
     # ---- Orders --------------------------------------------------------
     sheet = book.create_sheet("Orders")
