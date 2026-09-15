@@ -1,4 +1,4 @@
-# GBN '26
+# GBN Connect
 
 A festival companion app for attendees plus an organiser console, built with Python and Django.
 The original single-file HTML prototype kept everything in `localStorage`; this version keeps it
@@ -56,11 +56,11 @@ feedback CSV filename comes from **one place** - `FEST_BRAND` in `config/setting
 
 ```python
 FEST_BRAND = os.environ.get("FEST_BRAND", "GBN")
-FEST_BRAND_FULL = os.environ.get("FEST_BRAND_FULL", f"{FEST_BRAND} '26")
+FEST_BRAND_FULL = os.environ.get("FEST_BRAND_FULL", f"{FEST_BRAND} Connect")
 FEST_TAGLINE = os.environ.get("FEST_TAGLINE", "Festival Companion")
 ```
 
-`FEST_BRAND_FULL` is the big gradient title on the app header and login screen (`GBN '26`);
+`FEST_BRAND_FULL` is the big gradient title on the app header and login screen (`GBN Connect`);
 `FEST_BRAND` is the short form used in page titles and the console footer. Change either value,
 or set the matching environment variable, and every page follows - no template edits needed.
 
@@ -114,7 +114,7 @@ Read from the environment (all optional in development):
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `FEST_BRAND` | `GBN` | Festival name used across the app. |
-| `FEST_BRAND_FULL` | `GBN '26` | Long form for the header and login screen. |
+| `FEST_BRAND_FULL` | `GBN Connect` | Long form for the header and login screen. |
 | `FEST_TAGLINE` | `Festival Companion` | Sub-title in the browser tab. |
 | `FEST_AUTO_APPROVE_PHOTOS` | `0` | Skip photo moderation. |
 | `DJANGO_SECRET_KEY` | dev key | **Set this in production.** |

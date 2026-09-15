@@ -135,5 +135,5 @@ FEST_AUTO_APPROVE_PHOTOS = os.environ.get("FEST_AUTO_APPROVE_PHOTOS", "0") == "1
 # Change FEST_BRAND here (or in the environment) and every page follows.
 # --------------------------------------------------------------------------- #
 FEST_BRAND = os.environ.get("FEST_BRAND", "GBN")
-FEST_BRAND_FULL = os.environ.get("FEST_BRAND_FULL", f"{FEST_BRAND} '26")
+FEST_BRAND_FULL = os.environ.get("FEST_BRAND_FULL", f"{FEST_BRAND} Connect")
 FEST_TAGLINE = os.environ.get("FEST_TAGLINE", "Festival Companion")

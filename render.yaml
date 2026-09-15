@@ -37,7 +37,7 @@ services:
       - key: FEST_BRAND
         value: GBN
       - key: FEST_BRAND_FULL
-        value: GBN '26
+        value: GBN Connect
       - key: WEB_CONCURRENCY
         value: "4"
       # Organiser login, created/updated on every deploy by build.sh.
