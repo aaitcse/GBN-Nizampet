@@ -49,6 +49,9 @@ services:
         value: admin
       - key: DJANGO_SUPERUSER_PASSWORD
         sync: false # set this yourself in the Render dashboard
-      # Set to 1 for one deploy if you want the demo events/photos/polls loaded.
+      # The real cultural programme. Idempotent, so it can stay on.
+      - key: LOAD_PROGRAMME
+        value: "1"
+      # Demo photos, polls and feedback - leave off for a real event.
       - key: SEED_DEMO_DATA
         value: "0"

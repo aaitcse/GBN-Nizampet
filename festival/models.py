@@ -8,6 +8,23 @@ from django.utils import timezone
 
 MAX_FESTIVAL_DAYS = 21
 
+STOCK_FALLBACK = (
+    "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80"
+)
+
+
+def festival_banner():
+    """The bundled festival image, used wherever nothing better is set."""
+    name = getattr(settings, "FEST_HERO_IMAGE", "")
+    if not name:
+        return STOCK_FALLBACK
+    try:
+        from django.templatetags.static import static
+
+        return static(name)
+    except ValueError:
+        return STOCK_FALLBACK
+
 
 def festival_dates():
     """The festival range from settings, or None if it is not configured."""
@@ -57,8 +74,12 @@ class Event(models.Model):
     """A single scheduled item on the festival programme."""
 
     CATEGORY_CHOICES = [
+        ("Dance", "Dance"),
+        ("Singing", "Singing"),
+        ("Sloka", "Sloka Recitation"),
+        ("Music", "Instrumental Music"),
+        ("Art", "Art & Display"),
         ("Ritual", "Ritual / Aarti"),
-        ("Music", "Music"),
         ("Show", "Show"),
         ("Workshop", "Workshop"),
         ("Food", "Food"),
@@ -87,10 +108,9 @@ class Event(models.Model):
     def display_image(self):
         if self.image:
             return self.image.url
-        return self.image_url or (
-            "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"
-            "?auto=format&fit=crop&w=400&q=80"
-        )
+        # Without a picture of its own, an item wears the festival banner -
+        # better than a stock concert photo above a sloka recitation.
+        return self.image_url or festival_banner()
 
     @property
     def bookmark_count(self):

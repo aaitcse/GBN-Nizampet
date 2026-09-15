@@ -11,7 +11,13 @@ python manage.py migrate --no-input
 # Creates/updates the organiser account when DJANGO_SUPERUSER_* env vars are set.
 python manage.py ensure_admin
 
-# Set SEED_DEMO_DATA=1 in the Render dashboard to load the demo festival.
+# Set LOAD_PROGRAMME=1 in the Render dashboard to load the real cultural
+# programme (idempotent - safe to leave on).
+if [ "${LOAD_PROGRAMME:-0}" = "1" ]; then
+    python manage.py load_programme
+fi
+
+# Set SEED_DEMO_DATA=1 to load demo photos, polls and feedback instead.
 if [ "${SEED_DEMO_DATA:-0}" = "1" ]; then
     python manage.py seed_demo
 fi

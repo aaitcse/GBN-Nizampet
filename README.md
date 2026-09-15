@@ -36,7 +36,8 @@ python -m venv .venv
 pip install -r requirements.txt
 
 python manage.py migrate
-python manage.py seed_demo --admin    # demo content + organiser login
+python manage.py load_programme       # the real cultural programme
+python manage.py seed_demo --admin    # demo photos/polls + organiser login
 python manage.py runserver
 ```
 
@@ -49,6 +50,15 @@ Use your own account instead of the demo one with `python manage.py createsuperu
 Open the attendee app on your phone by running `python manage.py runserver 0.0.0.0:8000` and
 visiting `http://<your-computer-ip>:8000/` on the same Wi-Fi (add that IP to
 `DJANGO_ALLOWED_HOSTS`).
+
+## The programme
+
+`python manage.py load_programme` loads the Gokuls Bhuvanam Community Ganesh Chavithi cultural
+programme (Day 1 Mon 14 Sep to Day 5 Fri 18 Sep, 48 items) transcribed from the day banners.
+It matches on day + time slot + title, so running it twice updates rather than duplicates, and
+`--replace` clears the table first. On Render, set `LOAD_PROGRAMME=1` and every deploy keeps the
+schedule in step with the file. Days 6 and 7 were not on the banners - add them to
+`festival/management/commands/load_programme.py`, or from the console.
 
 ## Festival dates and the schedule length
 
