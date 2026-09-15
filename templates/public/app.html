@@ -17,12 +17,9 @@
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-fest-accent via-fest-purple to-fest-cyan flex items-center justify-center shadow-lg animate-pulse-glow">
                 <i class="fa-solid fa-bolt text-xs text-white"></i>
             </div>
-            <div>
-                <h1 class="font-extrabold text-base tracking-wider bg-gradient-to-r from-white via-slate-200 to-fest-cyan bg-clip-text text-transparent leading-none">
-                    {{ brand_full|upper }}
-                </h1>
-                <span class="text-[9px] tracking-widest text-fest-accent uppercase font-bold">Public App</span>
-            </div>
+            <h1 class="font-extrabold text-base tracking-wider bg-gradient-to-r from-white via-slate-200 to-fest-cyan bg-clip-text text-transparent leading-none">
+                {{ brand_full|upper }}
+            </h1>
         </div>
 
         <a href="{% url 'festival:console_overview' %}"
