@@ -25,12 +25,13 @@
         <div>
             <label for="ts-flat" class="block text-[11px] font-bold text-gray-300 mb-1">Flat number *</label>
             <input type="text" name="flat_number" id="ts-flat" required inputmode="numeric"
-                   pattern="[0-9]*" maxlength="10" placeholder="e.g. 734"
+                   pattern="[0-9]*" maxlength="6" data-digits-only placeholder="e.g. 734"
                    class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
         </div>
         <div>
             <label for="ts-mobile" class="block text-[11px] font-bold text-gray-300 mb-1">Mobile *</label>
-            <input type="tel" name="mobile" id="ts-mobile" required inputmode="numeric" placeholder="10 digits"
+            <input type="tel" name="mobile" id="ts-mobile" required inputmode="numeric"
+                   pattern="[0-9]*" maxlength="10" data-digits-only placeholder="10 digits"
                    class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-fest-accent">
         </div>
     </div>

@@ -327,6 +327,24 @@
     });
 
     // ------------------------------------------------------------- t-shirts
+    // Fields that take digits and nothing else. Typing a letter or pasting a
+    // formatted number simply drops the characters, keeping the caret put.
+    $$("[data-digits-only]").forEach((field) =>
+        field.addEventListener("input", () => {
+            const caret = field.selectionStart;
+            const strippedBefore = (field.value.slice(0, caret).match(/\D/g) || []).length;
+            const digits = field.value.replace(/\D/g, "");
+            if (digits === field.value) return;
+            field.value = digits;
+            const position = Math.max(0, caret - strippedBefore);
+            try {
+                field.setSelectionRange(position, position);
+            } catch (e) {
+                /* some mobile keyboards refuse mid-composition; harmless */
+            }
+        })
+    );
+
     const tshirtForm = $("#tshirt-form");
 
     function shirtCount() {
