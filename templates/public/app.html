@@ -159,7 +159,7 @@
                 <div>
                     <label for="fb-category" class="block text-xs font-bold text-gray-300 mb-1">Feedback Category</label>
                     <select name="category" id="fb-category"
-                            class="w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-fest-accent">
+                            class="select-field w-full bg-fest-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-fest-accent">
                         {% for value, label in feedback_categories %}
                         <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
@@ -275,7 +275,7 @@
 
             <div>
                 <label class="block text-[11px] font-bold text-gray-300 mb-1">Category</label>
-                <select name="category" class="w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2 text-xs text-white">
+                <select name="category" class="select-field w-full bg-fest-cardLight border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white">
                     {% for value, label in photo_categories %}
                     <option value="{{ value }}">{{ label }}</option>
                     {% endfor %}

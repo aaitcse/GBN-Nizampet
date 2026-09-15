@@ -345,9 +345,10 @@
         while (list.children.length < wanted) {
             const index = list.children.length + 1;
             const row = document.createElement("div");
-            row.className = "flex items-center gap-2";
+            row.className = "flex items-center gap-2.5";
             row.innerHTML =
-                '<span class="w-16 shrink-0 text-[11px] font-bold text-gray-400">Shirt ' +
+                '<span class="w-7 h-7 shrink-0 rounded-full bg-white/10 border border-white/10 ' +
+                'text-[11px] font-black text-gray-300 flex items-center justify-center">' +
                 index +
                 "</span>";
             const select = template.content.firstElementChild.cloneNode(true);
@@ -358,7 +359,7 @@
 
         // Renumber after a removal so the names stay size_1..size_N.
         Array.from(list.children).forEach((row, i) => {
-            row.querySelector("span").textContent = "Shirt " + (i + 1);
+            row.querySelector("span").textContent = i + 1;
             row.querySelector("select").name = "size_" + (i + 1);
         });
 
