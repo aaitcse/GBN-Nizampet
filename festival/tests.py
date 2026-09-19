@@ -421,8 +421,9 @@ class ViewCountTests(TestCase):
         self.assertEqual(response.context["views_total"], 1)
 
 
+@override_settings(FEST_TSHIRT_PRICE=200)  # pin the price so amount math here is stable
 class TshirtOrderTests(TestCase):
-    def order(self, sizes=("L", "L"), **overrides):
+    def order(self, sizes=("40", "40"), **overrides):
         """Post the form the way the page does: a count, then a size per shirt."""
         payload = {
             "flat_number": "734",
@@ -449,19 +450,24 @@ class TshirtOrderTests(TestCase):
 
     def test_summary_comes_back_with_the_running_total(self):
         self.order()
-        response = self.order(sizes=["Kids-M"])
+        response = self.order(sizes=["28"])
         self.assertContains(response, "You are on the list")
         self.assertContains(response, "3 shirts total")
         self.assertContains(response, "600")
 
-    def test_mobile_must_be_ten_digits(self):
+    def test_mobile_is_optional(self):
+        response = self.order(mobile="")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(TshirtOrder.objects.get().mobile, "")
+
+    def test_mobile_must_be_ten_digits_if_given(self):
         response = self.order(mobile="12345")
         self.assertEqual(response.status_code, 400)
         self.assertIn("mobile", response.json()["errors"])
         self.assertEqual(TshirtOrder.objects.count(), 0)
 
     def test_indian_country_code_is_accepted_and_stripped(self):
-        self.order(sizes=["M"], mobile="+91 98765 43210")
+        self.order(sizes=["38"], mobile="+91 98765 43210")
         self.assertEqual(TshirtOrder.objects.get().mobile, "9876543210")
 
     def test_quantity_is_capped(self):
@@ -470,17 +476,17 @@ class TshirtOrderTests(TestCase):
         self.assertEqual(TshirtOrder.objects.count(), 0)
 
     def test_each_shirt_can_be_a_different_size(self):
-        self.order(sizes=["L", "Kids-S", "L", "XXL"], name="Pavan")
+        self.order(sizes=["40", "26", "40", "44"], name="Pavan")
 
         rows = {row.size: row.quantity for row in TshirtOrder.objects.all()}
-        self.assertEqual(rows, {"L": 2, "Kids-S": 1, "XXL": 1})  # same sizes folded together
+        self.assertEqual(rows, {"40": 2, "26": 1, "44": 1})  # same sizes folded together
         self.assertEqual(sum(rows.values()), 4)
 
     def test_repeat_orders_add_to_the_same_size_row(self):
-        self.order(sizes=["M"])
-        self.order(sizes=["M", "M"])
+        self.order(sizes=["38"])
+        self.order(sizes=["38", "38"])
 
-        row = TshirtOrder.objects.get(size="M")
+        row = TshirtOrder.objects.get(size="38")
         self.assertEqual(row.quantity, 3)
         self.assertEqual(TshirtOrder.objects.count(), 1)
 
@@ -508,7 +514,7 @@ class TshirtOrderTests(TestCase):
         self.assertEqual(TshirtOrder.objects.count(), 0)
 
     def test_an_invalid_size_is_refused(self):
-        response = self.order(sizes=["XXXXXL"])
+        response = self.order(sizes=["99"])
         self.assertEqual(response.status_code, 400)
         self.assertEqual(TshirtOrder.objects.count(), 0)
 
@@ -522,27 +528,28 @@ class TshirtOrderTests(TestCase):
 
     @override_settings(FEST_TSHIRT_PRICE=250)
     def test_price_comes_from_settings(self):
-        self.order(sizes=["M", "M", "M"])
+        self.order(sizes=["38", "38", "38"])
         self.assertEqual(TshirtOrder.objects.get().amount, 750)
         self.assertContains(self.client.get(reverse("festival:public_app")), "250")
 
     def test_a_device_only_sees_its_own_orders(self):
         self.order()
-        TshirtOrder.objects.create(flat_number="1099", mobile="9000000000", size="S", quantity=5)
+        TshirtOrder.objects.create(flat_number="1099", mobile="9000000000", size="36", quantity=5)
 
         response = self.client.get(reverse("festival:public_app"), {"tab": "tshirt"})
         self.assertEqual(response.context["my_shirt_count"], 2)
         self.assertNotContains(response, "1099")
 
 
+@override_settings(FEST_TSHIRT_PRICE=200)  # pin the price so amount math here is stable
 class TshirtConsoleTests(TestCase):
     def setUp(self):
         get_user_model().objects.create_user("organiser", password="pw12345!", is_staff=True)
         self.client.login(username="organiser", password="pw12345!")
-        TshirtOrder.objects.create(flat_number="101", mobile="9000000001", size="M", quantity=2)
-        TshirtOrder.objects.create(flat_number="102", mobile="9000000002", size="M", quantity=1)
+        TshirtOrder.objects.create(flat_number="101", mobile="9000000001", size="38", quantity=2)
+        TshirtOrder.objects.create(flat_number="102", mobile="9000000002", size="38", quantity=1)
         self.big = TshirtOrder.objects.create(
-            flat_number="201", mobile="9000000003", size="XL", quantity=4
+            flat_number="201", mobile="9000000003", size="42", quantity=4
         )
 
     def test_order_sheet_totals_and_size_breakdown(self):
@@ -553,7 +560,7 @@ class TshirtConsoleTests(TestCase):
         self.assertEqual(response.context["total_orders"], 3)
 
         sizes = {row["size"]: row["shirts"] for row in response.context["by_size"]}
-        self.assertEqual(sizes, {"M": 3, "XL": 4})
+        self.assertEqual(sizes, {"38": 3, "42": 4})
 
     def test_marking_an_order_handed_over(self):
         self.client.post(reverse("festival:console_tshirt_action", args=[self.big.id, "toggle"]))
@@ -569,7 +576,7 @@ class TshirtConsoleTests(TestCase):
 
         from openpyxl import load_workbook
 
-        TshirtOrder.objects.create(flat_number="303", mobile="9000000009", size="Kids-M", quantity=2)
+        TshirtOrder.objects.create(flat_number="303", mobile="9000000009", size="28", quantity=2)
         book = load_workbook(io.BytesIO(self.client.get(reverse("festival:console_tshirt_export")).content))
         summary = {row[0]: row[1] for row in book["Summary"].iter_rows(values_only=True) if row[0]}
 
@@ -618,8 +625,8 @@ class TshirtConsoleTests(TestCase):
 
         summary = {row[0]: row[1] for row in book["Summary"].iter_rows(values_only=True) if row[0]}
         # The print order, in the app's size order, with the totals beneath it.
-        self.assertEqual(summary["Adult M"], 3)
-        self.assertEqual(summary["Adult XL"], 4)
+        self.assertEqual(summary["Size 38"], 3)
+        self.assertEqual(summary["Size 42"], 4)
         self.assertEqual(summary["TOTAL SHIRTS TO PRINT"], 7)
         self.assertEqual(summary["Households ordered"], 3)
         # Money lives on its own sheet now.

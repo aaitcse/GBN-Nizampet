@@ -150,7 +150,7 @@ class TshirtOrderForm(forms.Form):
     """
 
     flat_number = forms.CharField(max_length=10)
-    mobile = forms.CharField(max_length=15)
+    mobile = forms.CharField(max_length=15, required=False)
     name = forms.CharField(max_length=80)
     quantity = forms.IntegerField(min_value=1, max_value=20)
 
@@ -184,7 +184,7 @@ class TshirtOrderForm(forms.Form):
             )
             if not created:
                 row.quantity += count
-                row.mobile = data["mobile"]
+                row.mobile = data["mobile"] or row.mobile
                 row.name = data["name"] or row.name
                 row.save(update_fields=["quantity", "mobile", "name"])
             rows.append(row)
@@ -203,14 +203,16 @@ class TshirtOrderForm(forms.Form):
         return name
 
     def clean_mobile(self):
-        raw = self.cleaned_data["mobile"]
+        raw = self.cleaned_data.get("mobile", "")
         digits = re.sub(r"\D", "", raw)
+        if not digits:
+            return ""
         if digits.startswith("91") and len(digits) == 12:
             digits = digits[2:]
         if digits.startswith("0") and len(digits) == 11:
             digits = digits[1:]
         if len(digits) != 10:
-            raise forms.ValidationError("Enter a 10 digit mobile number.")
+            raise forms.ValidationError("If you add a mobile number, it should be 10 digits.")
         return digits
 
 

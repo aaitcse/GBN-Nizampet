@@ -765,7 +765,7 @@ def console_tshirt_export(request):
         if not count:
             continue
         summary.append([label, count])
-        if value.startswith("Kids"):
+        if int(value) < TshirtOrder.ADULT_SIZE_FROM:
             kids += count
         else:
             adults += count

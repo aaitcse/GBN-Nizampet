@@ -78,7 +78,11 @@
                     <td class="px-3 py-2.5 font-bold text-white whitespace-nowrap">{{ order.flat_number }}</td>
                     <td class="px-3 py-2.5 text-gray-300">{{ order.name|default:"-" }}</td>
                     <td class="px-3 py-2.5 text-gray-300 whitespace-nowrap">
+                        {% if order.mobile %}
                         <a href="tel:{{ order.mobile }}" class="hover:text-fest-cyan">{{ order.mobile }}</a>
+                        {% else %}
+                        <span class="text-gray-600">-</span>
+                        {% endif %}
                     </td>
                     <td class="px-3 py-2.5 text-gray-200 whitespace-nowrap">{{ order.get_size_display }}</td>
                     <td class="px-3 py-2.5 text-right font-black text-white">{{ order.quantity }}</td>

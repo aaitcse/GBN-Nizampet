@@ -279,22 +279,14 @@ class Vote(models.Model):
 class TshirtOrder(models.Model):
     """A household reserving festival t-shirts for the final day."""
 
-    SIZE_CHOICES = [
-        ("Kids-S", "Kids S (2-4 yrs)"),
-        ("Kids-M", "Kids M (5-7 yrs)"),
-        ("Kids-L", "Kids L (8-10 yrs)"),
-        ("Kids-XL", "Kids XL (11-13 yrs)"),
-        ("XS", "Adult XS"),
-        ("S", "Adult S"),
-        ("M", "Adult M"),
-        ("L", "Adult L"),
-        ("XL", "Adult XL"),
-        ("XXL", "Adult XXL"),
-        ("XXXL", "Adult XXXL"),
-    ]
+    # Numeric chest size in inches, the convention this community orders by
+    # (24 for the smallest kids' size up to 50 for the largest adult size).
+    SIZE_CHOICES = [(str(n), f"Size {n}") for n in range(24, 51, 2)]
+    # Sizes at or above this are billed/printed as adult; below is kids/junior.
+    ADULT_SIZE_FROM = 36
 
     flat_number = models.CharField(max_length=30, help_text="Flat or villa number")
-    mobile = models.CharField(max_length=15)
+    mobile = models.CharField(max_length=15, blank=True)
     name = models.CharField(max_length=80, blank=True)
     size = models.CharField(max_length=10, choices=SIZE_CHOICES)
     quantity = models.PositiveSmallIntegerField(default=1)

@@ -188,7 +188,7 @@ FEST_HELP_WHATSAPP = os.environ.get("FEST_HELP_WHATSAPP", "919999999999")
 # Festival t-shirts for the final day. Set FEST_TSHIRT_OPEN=0 to close orders
 # once the count has gone to the printer.
 FEST_TSHIRT_OPEN = os.environ.get("FEST_TSHIRT_OPEN", "1") == "1"
-FEST_TSHIRT_PRICE = int(os.environ.get("FEST_TSHIRT_PRICE", 200))
+FEST_TSHIRT_PRICE = int(os.environ.get("FEST_TSHIRT_PRICE", 150))
 FEST_TSHIRT_OCCASION = os.environ.get("FEST_TSHIRT_OCCASION", "Nimajjanam Day")
 FEST_TSHIRT_NOTE = os.environ.get(
     "FEST_TSHIRT_NOTE",
